@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T MATH - Diễn Đàn Hỏi Đáp Toán Học</title>
+    <style>
+        /* Thiết lập hệ thống màu sắc hiện đại */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --admin-color: #ef4444;
+            --solved-color: #10b981;
+            --accent-bg: #eff6ff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --star-color: #f59e0b;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-sidebar: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --accent-bg: #1e3a8a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; transition: all 0.2s; }
+
+        /* HEADER SECTION */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: var(--shadow);
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo-img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
+        .logo-title { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        
+        .search-container { position: relative; width: 350px; }
+        .search-container input { width: 100%; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 20px; background-color: var(--bg-body); color: var(--text-main); }
+        
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        
+        /* LAYOUT MAIN CẤU TRÚC 2 CỘT */
+        .wrapper { max-width: 1300px; margin: 0 auto; display: flex; gap: 24px; padding: 24px; }
+        
+        /* SIDEBAR TRÁI */
+        aside { width: 260px; flex-shrink: 0; }
+        .sidebar-card { background-color: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); position: sticky; top: 90px; }
+        .menu-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .menu-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-weight: 500; color: var(--text-main); margin-bottom: 4px; }
+        .menu-item:hover, .menu-item.active { background-color: var(--accent-bg); color: var(--primary); }
+        
+        /* KHU VỰC NỘI DUNG CHÍNH */
+        main { flex-grow: 1; min-width: 0; }
+        
+        /* UI COMPONENTS */
+        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+        
+        .main-heading-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .main-title { font-size: 24px; font-weight: 700; margin: 0; }
+        
+        button { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.15s; font-size: 14px; }
+        .btn-primary { background-color: var(--primary); color: #ffffff; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #64748b; color: #ffffff; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-danger { background-color: var(--admin-color); color: white; }
+        
+        /* DANH SÁCH CÂU HỎI */
+        .question-row { cursor: pointer; transition: transform 0.15s; border-bottom: 1px solid var(--border-color); padding: 16px 0; }
+        .question-row:last-child { border-bottom: none; }
+        .question-row:hover { transform: translateX(4px); }
+        .question-title { font-size: 18px; font-weight: 600; color: var(--primary); margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        
+        /* HUY HIỆU (BADGES) */
+        .badge { font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 600; color: white; display: inline-block; }
+        .bg-unsolved { background-color: #94a3b8; }
+        .bg-solved { background-color: var(--solved-color); }
+        .bg-admin { background-color: var(--admin-color); }
+        .bg-cate { background-color: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
+        [data-theme="dark"] .bg-cate { background-color: #334155; color: #cbd5e1; border-color: #475569; }
+
+        .meta-line { font-size: 13px; color: var(--text-muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+        /* FORM NHẬP */
+        .form-control { margin-bottom: 16px; }
+        .form-control label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+        .form-control input, .form-control textarea, .form-control select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
+        
+        /* MODAL ĐĂNG NHẬP / ĐĂNG KÝ MỚI */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .auth-box { background: var(--bg-card); border-radius: 16px; width: 420px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        
+        .auth-tabs { display: flex; justify-content: space-around; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); }
+        .auth-tab { padding-bottom: 10px; font-weight: 700; cursor: pointer; color: var(--text-muted); font-size: 16px; width: 50%; text-align: center; transition: all 0.2s; }
+        .auth-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        /* BÌNH LUẬN & TRẢ LỜI */
+        .answer-block { background-color: var(--bg-body); padding: 16px; border-radius: 8px; margin-top: 12px; border-left: 4px solid var(--border-color); position: relative; }
+        .answer-block.admin-style { border-left-color: var(--admin-color); background-color: rgba(239, 68, 68, 0.03); }
+
+        /* BẢNG TOP 10 LEADERBOARD */
+        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .leaderboard-table th, .leaderboard-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-table th { background-color: var(--accent-bg); color: var(--primary); font-weight: 700; }
+        .leaderboard-table tr:hover { background-color: rgba(0,0,0,0.01); }
+        .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 700; font-size: 13px; }
+        .rank-1 { background-color: #fef08a; color: #a16207; }
+        .rank-2 { background-color: #e2e8f0; color: #475569; }
+        .rank-3 { background-color: #ffedd5; color: #c2410c; }
+
+        /* CSS ĐÁNH GIÁ SAO ĐỘC LẬP CHÍNH XÁC */
+        .stars-outer { position: relative; display: inline-block; color: #cbd5e1; font-size: 18px; width: 92px; letter-spacing: 1px; line-height: 1; user-select: none; }
+        .stars-inner { position: absolute; top: 0; left: 0; overflow: hidden; color: var(--star-color); white-space: nowrap; transition: width 0.3s; line-height: 1; }
+        .stars-outer::before, .stars-inner::before { content: "★★★★★"; }
+
+        .empty-view { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .hidden { display: none !important; }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="auth-box">
+            <div class="auth-tabs">
+                <div id="tabLogin" class="auth-tab active" onclick="switchAuthMode('login')">Đăng nhập</div>
+                <div id="tabRegister" class="auth-tab" onclick="switchAuthMode('register')">Đăng ký</div>
+            </div>
+            
+            <div id="viewLoginContainer">
+                <div class="form-control" style="text-align: left;">
+                    <label>Địa chỉ Email (Gmail):</label>
+                    <input type="email" id="loginEmail" placeholder="example@gmail.com">
+                </div>
+                <div class="form-control" style="text-align: left;">
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="loginPassword" placeholder="Nhập mật khẩu...">
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="executeLogin()">Xác nhận đăng nhập</button>
+            </div>
+
+            <div id="viewRegisterContainer" class="hidden">
+                <div class="form-control" style="text-align: left;">
+                    <label>Địa chỉ Email (Gmail):</label>
+                    <input type="email" id="regEmail" placeholder="username@gmail.com">
+                </div>
+                <div class="form-control" style="text-align: left;">
+                    <label>Biệt danh hiển thị:</label>
+                    <input type="text" id="regName" placeholder="Nhập tên hiển thị trên diễn đàn...">
+                </div>
+                <div class="form-control" style="text-align: left;">
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="regPassword" placeholder="Tạo mật khẩu...">
+                </div>
+                <div class="form-control" style="text-align: left;">
+                    <label>Xác nhận mật khẩu:</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu...">
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="executeRegister()">Tạo tài khoản mới</button>
+            </div>
+            
+            <button class="btn-secondary" style="width: 100%; margin-top: 8px;" onclick="closeLoginModal()">Hủy bỏ</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left" onclick="switchCategory('all')">
+            <img src="logo.png" alt="T Math Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/50?text=TM'">
+            <div class="logo-title">T MATH QA</div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchBox" placeholder="Tìm kiếm câu hỏi theo tiêu đề..." onkeyup="triggerSearch()">
+        </div>
+        <div class="header-right">
+            <button class="btn-secondary" onclick="toggleThemeMode()" style="padding: 8px 14px;">Sáng/Tối</button>
+            <div id="userStateArea"></div>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <aside>
+            <div class="sidebar-card">
+                <div class="menu-title">Danh mục thảo luận</div>
+                <div class="menu-item active" id="menu-all" onclick="switchCategory('all')"> Tất cả câu hỏi</div>
+                <div class="menu-item" id="menu-algebra" onclick="switchCategory('Đại số')"> Đại số</div>
+                <div class="menu-item" id="menu-geometry" onclick="switchCategory('Hình học')"> Hình học</div>
+                <div class="menu-item" id="menu-theory" onclick="switchCategory('Số học')"> Số học</div>
+                <div class="menu-item" id="menu-combinatorics" onclick="switchCategory('Tổ hợp')"> Tổ hợp</div>
+                
+                <div class="menu-title" style="margin-top: 15px;">Thành tích</div>
+                <div class="menu-item" id="menu-leaderboard" onclick="switchCategory('leaderboard')">🏆 Bảng xếp hạng</div>
+
+                <div id="adminPanelLink" class="hidden" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div class="menu-title">Quản trị hệ thống</div>
+                    <div class="menu-item" id="menu-admin" onclick="showAdminDashboard()" style="color: var(--admin-color);"> Danh sách báo cáo</div>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <div id="viewHome">
+                <div class="main-heading-box">
+                    <h2 class="main-title" id="categoryHeading">Tất cả câu hỏi</h2>
+                    <button class="btn-primary" onclick="clickAskButton()">+ Đặt câu hỏi</button>
+                </div>
+                <div class="card" style="padding: 8px 24px;" id="boxQuestionsList"></div>
+            </div>
+
+            <div id="viewAsk" class="hidden">
+                <div class="main-heading-box">
+                    <h2 class="main-title">Đặt câu hỏi cho cộng đồng</h2>
+                </div>
+                <div class="card">
+                    <div class="form-control">
+                        <label>Tiêu đề bài viết:</label>
+                        <input type="text" id="formTitle" placeholder="Tóm tắt ngắn gọn bài toán hoặc vấn đề thắc mắc...">
+                    </div>
+                    <div class="form-control">
+                        <label>Phân loại danh mục:</label>
+                        <select id="formCategory">
+                            <option value="Đại số">Đại số</option>
+                            <option value="Hình học">Hình học</option>
+                            <option value="Số học">Số học</option>
+                            <option value="Tổ hợp">Tổ hợp</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label>Nội dung chi tiết bài đăng:</label>
+                        <textarea id="formContent" style="height: 180px;" placeholder="Ghi rõ đề bài, các bước đã làm thử hoặc vướng mắc cụ thể của bạn..."></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="actionSaveQuestion()">Đăng bài lên diễn đàn</button>
+                    <button class="btn-secondary" style="margin-left: 8px;" onclick="navigateToHome()">Hủy bỏ</button>
+                </div>
+            </div>
+
+            <div id="viewDetail" class="hidden">
+                <button class="btn-secondary" style="margin-bottom: 16px;" onclick="navigateToHome()">&larr; Trở lại</button>
+                <div id="postDetailCard" class="card"></div>
+                
+                <div id="adminRatingPanel" class="card hidden" style="border: 2px solid var(--solved-color); background-color: rgba(16, 185, 129, 0.02);">
+                    <h3 style="margin-top:0; color: var(--solved-color);">Phê duyệt & Đánh giá chất lượng lời giải</h3>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <div class="form-control" style="flex: 1; min-width: 200px;">
+                            <label>Đánh giá độ khó bài đăng (Số sao):</label>
+                            <select id="rateStarSelect">
+                                <option value="0">0 Sao (0 điểm)</option>
+                                <option value="0.5">0.5 Sao (+5 điểm)</option>
+                                <option value="1">1.0 Sao (+10 điểm)</option>
+                                <option value="1.5">1.5 Sao (+15 điểm)</option>
+                                <option value="2">2.0 Sao (+20 điểm)</option>
+                                <option value="2.5">2.5 Sao (+25 điểm)</option>
+                                <option value="3">3.0 Sao (+30 điểm)</option>
+                                <option value="3.5">3.5 Sao (+35 điểm)</option>
+                                <option value="4">4.0 Sao (+40 điểm)</option>
+                                <option value="4.5">4.5 Sao (+45 điểm)</option>
+                                <option value="5">5.0 Sao (+50 điểm)</option>
+                            </select>
+                        </div>
+                        <div class="form-control" style="flex: 1; min-width: 200px;">
+                            <label>Chọn thành viên đã giải quyết bài tập này:</label>
+                            <select id="rateSolverSelect"></select>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="background-color: var(--solved-color);" onclick="executeResolveAndAward()">✓ Xác nhận hoàn thành & Cộng điểm</button>
+                </div>
+
+                <div id="replyFormContainer" class="card hidden">
+                    <h3 style="margin-top: 0; margin-bottom: 12px;">Đóng góp câu trả lời của bạn</h3>
+                    <div class="form-control">
+                        <textarea id="replyTextarea" style="height: 100px;" placeholder="Viết câu trả lời hoặc hướng dẫn giải tại đây..."></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="actionSaveReply()">Gửi phản hồi</button>
+                </div>
+
+                <div class="card" id="answersContainer"></div>
+            </div>
+
+            <div id="viewLeaderboard" class="hidden">
+                <div class="main-heading-box">
+                    <h2 class="main-title">🏆 Bảng Xếp Hạng Cao Thủ Diễn Đàn</h2>
+                </div>
+                <div class="card" style="padding: 12px 24px;">
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">Danh sách 10 thành viên tích lũy điểm thưởng cao nhất thông qua việc giải quyết chính xác các câu hỏi Toán học.</p>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px; text-align: center;">Hạng</th>
+                                <th>Thành viên</th>
+                                <th>Tài khoản Email</th>
+                                <th style="text-align: right; width: 15px; white-space: nowrap;">Điểm tích lũy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="viewAdmin" class="hidden">
+                <div class="main-heading-box">
+                    <h2 class="main-title" style="color: var(--admin-color);">Bảng Quản Trị Vi Phạm</h2>
+                </div>
+                <div class="card" id="reportsListContainer"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // CẤU HÌNH KẾT NỐI MẠNG CLOUD FIREBASE REALTIME
+        // Bạn chỉ cần thay mã token nhận được từ trang Firebase Console vào đây là chạy trực tuyến toàn cầu!
+        // ==========================================
+        const firebaseConfig = {
+    apiKey: "AIzaSyB5VJ9XOQsY3xCSRU6dBhKCMK1rOqwjEJw",
+    authDomain: "tmath-b8bdc.firebaseapp.com",
+    databaseURL: "https://tmath-b8bdc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tmath-b8bdc",
+    storageBucket: "tmath-b8bdc.firebasestorage.app",
+    messagingSenderId: "1089082691244",
+    appId: "1:1089082691244:web:63bcad91c84fcd23781909"
+};
+        
+        // Tự động kiểm tra cấu hình để chạy dự phòng cục bộ nâng cao nếu bạn chưa kịp dán mã Firebase
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
+        } else {
+            console.warn("LƯU Ý: Bạn chưa dán mã cấu hình FirebaseConfig. Trang web đang chạy ở chế độ mạng nội bộ tự phát.");
+            window.database = {
+                ref: function(path) {
+                    return {
+                        on: function(event, callback) {
+                            let data = localStorage.getItem(path);
+                            callback({ val: () => JSON.parse(data) });
+                            window.addEventListener('storage', function(e) {
+                                if (e.key === path) {
+                                    callback({ val: () => JSON.parse(e.newValue) });
+                                }
+                            });
+                        },
+                        set: function(value) {
+                            localStorage.setItem(path, JSON.stringify(value));
+                            window.dispatchEvent(new StorageEvent('storage', { key: path, newValue: JSON.stringify(value) }));
+                        }
+                    }
+                }
+            };
+        }
+        
+        if (typeof database === 'undefined' && typeof firebase !== 'undefined') {
+            window.database = firebase.database();
+        }
+
+        // Khởi tạo các biến trạng thái toàn cục
+        let db_users = [];
+        let db_questions = [];
+        let db_reports = [];
+        let sessionUser = JSON.parse(localStorage.getItem('tmath_session_user')) || null;
+        let selectedCategory = "all";
+        let activeQuestionId = null;
+        let currentAuthMode = "login";
+        let isFirebaseInitialized = false;
+
+        // XỬ LÝ KẾT NỐI ĐỒNG BỘ MẠNG TỰ ĐỘNG THỜI GIAN THỰC (REALTIME CLOUD)
+        function syncDatabase() {
+            if (isFirebaseInitialized) return;
+            isFirebaseInitialized = true;
+
+            // 1. Tự động cập nhật danh sách thành viên trực tuyến toàn cầu
+            database.ref('tmath_users').on('value', (snapshot) => {
+                db_users = snapshot.val() || [];
+                
+                // Kiểm tra tài khoản Admin mặc định tối cao
+                let adminExists = db_users.some(u => u.email === "tmstuan3641@gmail.com");
+                if (!adminExists) {
+                    db_users.push({
+                        email: "tmstuan3641@gmail.com",
+                        username: "Thầy Sơn/Tuấn (Admin)",
+                        password: "TmsTuan!2026#",
+                        role: "admin",
+                        points: 0
+                    });
+                    database.ref('tmath_users').set(db_users);
+                }
+
+                for (let i = 0; i < db_users.length; i++) {
+                    if (db_users[i].points === undefined) db_users[i].points = 0;
+                }
+
+                syncUserHeaderUIOnly();
+                if (!document.getElementById("viewLeaderboard").classList.contains("hidden")) {
+                    renderLeaderboard();
+                }
+            });
+
+            // 2. Tự động cập nhật bài đăng mới nhất từ tất cả người dùng khác gửi lên mạng
+            database.ref('tmath_questions_v2').on('value', (snapshot) => {
+                db_questions = snapshot.val() || [];
+                
+                // Tự động vẽ lại trang hiện hành ngay lập tức khi mạng dữ liệu thay đổi
+                if (!document.getElementById("viewHome").classList.contains("hidden")) {
+                    renderQuestionsFeed(document.getElementById("searchBox").value);
+                } else if (!document.getElementById("viewDetail").classList.contains("hidden")) {
+                    renderQuestionDetail(activeQuestionId);
+                }
+            });
+
+            // 3. Tự động đồng bộ các báo cáo vi phạm về màn hình Admin
+            database.ref('tmath_reports_v2').on('value', (snapshot) => {
+                db_reports = snapshot.val() || [];
+                if (!document.getElementById("viewAdmin").classList.contains("hidden")) {
+                    renderAdminReports();
+                }
+            });
+        }
+
+        function generateStarsUI(rating) {
+            if (rating === undefined || rating === null) return '';
+            let percent = (parseFloat(rating) / 5) * 100;
+            return `
+                <div style="display: inline-flex; align-items: center; gap: 6px; margin-left: 4px;">
+                    <div class="stars-outer" title="${rating} sao">
+                        <div class="stars-inner" style="width: ${percent}%;"></div>
+                    </div>
+                    <span style="font-size: 12px; color: var(--star-color); font-weight: 700;">${rating}★</span>
+                </div>
+            `;
+        }
+
+        function toggleThemeMode() {
+            if (document.body.getAttribute("data-theme") === "dark") {
+                document.body.removeAttribute("data-theme");
+            } else {
+                document.body.setAttribute("data-theme", "dark");
+            }
+        }
+
+        function syncUserHeaderUIOnly() {
+            let container = document.getElementById("userStateArea");
+            let adminLink = document.getElementById("adminPanelLink");
+            
+            if (sessionUser === null) {
+                container.innerHTML = `<button class="btn-primary" onclick="openLoginModal()">Đăng nhập / Đăng ký</button>`;
+                adminLink.classList.add("hidden");
+            } else {
+                let currentRealUser = db_users.find(u => u.email === sessionUser.email);
+                let currentPoints = currentRealUser ? (currentRealUser.points || 0) : 0;
+                let badgeHTML = "";
+                if (sessionUser.role === "admin") {
+                    badgeHTML = `<span class="badge bg-admin" style="margin-right:8px;">Admin</span>`;
+                    adminLink.classList.remove("hidden");
+                } else {
+                    adminLink.classList.add("hidden");
+                }
+                container.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:14px;">Chào, ${badgeHTML}<b>${sessionUser.username}</b> (<b style="color:var(--primary);">${currentPoints}đ</b>)</span>
+                        <button class="btn-secondary" style="padding:6px 12px; font-size:12px;" onclick="actionLogout()">Đăng xuất</button>
+                    </div>
+                `;
+            }
+        }
+
+        function syncUserHeaderUI() {
+            syncUserHeaderUIOnly();
+        }
+
+        function openLoginModal() { 
+            document.getElementById("loginModal").classList.remove("hidden");
+            switchAuthMode("login");
+            clearAuthInputs();
+        }
+        
+        function closeLoginModal() { 
+            document.getElementById("loginModal").classList.add("hidden");
+            clearAuthInputs();
+        }
+
+        function clearAuthInputs() {
+            document.getElementById("loginEmail").value = "";
+            document.getElementById("loginPassword").value = "";
+            document.getElementById("regEmail").value = "";
+            document.getElementById("regName").value = "";
+            document.getElementById("regPassword").value = "";
+            document.getElementById("regConfirmPassword").value = "";
+        }
+
+        function switchAuthMode(mode) {
+            currentAuthMode = mode;
+            if (mode === "login") {
+                document.getElementById("tabLogin").classList.add("active");
+                document.getElementById("tabRegister").classList.remove("active");
+                document.getElementById("viewLoginContainer").classList.remove("hidden");
+                document.getElementById("viewRegisterContainer").classList.add("hidden");
+            } else {
+                document.getElementById("tabLogin").classList.remove("active");
+                document.getElementById("tabRegister").classList.add("active");
+                document.getElementById("viewLoginContainer").classList.add("hidden");
+                document.getElementById("viewRegisterContainer").classList.remove("hidden");
+            }
+        }
+
+        function executeRegister() {
+            let email = document.getElementById("regEmail").value.trim().toLowerCase();
+            let name = document.getElementById("regName").value.trim();
+            let password = document.getElementById("regPassword").value;
+            let confirmPassword = document.getElementById("regConfirmPassword").value;
+            
+            if (!email || !name || !password || !confirmPassword) {
+                alert("Vui lòng nhập đầy đủ toàn bộ thông tin đăng ký!");
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert("Mật khẩu nhập lại không trùng khớp!");
+                return;
+            }
+            if (db_users.some(u => u.email === email)) {
+                alert("Địa chỉ Email này đã được đăng ký tài khoản trước đó!");
+                return;
+            }
+
+            let assignedRole = (email === "tmstuan3641@gmail.com") ? "admin" : "member";
+
+            let newUser = {
+                email: email,
+                username: name,
+                password: password,
+                role: assignedRole,
+                points: 0
+            };
+
+            db_users.push(newUser);
+            database.ref('tmath_users').set(db_users);
+            
+            alert("Đăng ký tài khoản thành công! Hệ thống tự chuyển sang mục Đăng nhập.");
+            switchAuthMode("login");
+            document.getElementById("loginEmail").value = email;
+        }
+
+        function executeLogin() {
+            let email = document.getElementById("loginEmail").value.trim().toLowerCase();
+            let pass = document.getElementById("loginPassword").value;
+
+            if (email === "" || pass === "") {
+                alert("Vui lòng nhập đầy đủ thông tin Email và Mật khẩu!");
+                return;
+            }
+
+            let matchedUser = db_users.find(u => u.email === email && u.password === pass);
+            if (!matchedUser) {
+                alert("Email hoặc Mật khẩu không chính xác, vui lòng kiểm tra lại!");
+                return;
+            }
+
+            let activeRole = (matchedUser.email === "tmstuan3641@gmail.com") ? "admin" : "member";
+            sessionUser = {
+                email: matchedUser.email,
+                username: matchedUser.username,
+                role: activeRole
+            };
+            localStorage.setItem('tmath_session_user', JSON.stringify(sessionUser));
+            
+            closeLoginModal();
+            syncUserHeaderUIOnly();
+            
+            if (!document.getElementById("viewDetail").classList.contains("hidden")) {
+                renderQuestionDetail(activeQuestionId);
+            } else {
+                navigateToHome();
+            }
+        }
+
+        function actionLogout() {
+            sessionUser = null;
+            localStorage.removeItem('tmath_session_user');
+            syncUserHeaderUIOnly();
+            navigateToHome();
+        }
+
+        function clickAskButton() {
+            if (sessionUser === null) {
+                alert("Bạn phải đăng nhập tài khoản diễn đàn để đăng câu hỏi thảo luận!");
+                openLoginModal();
+            } else {
+                document.getElementById("viewHome").classList.add("hidden");
+                document.getElementById("viewDetail").classList.add("hidden");
+                document.getElementById("viewAdmin").classList.add("hidden");
+                document.getElementById("viewLeaderboard").classList.add("hidden");
+                document.getElementById("viewAsk").classList.remove("hidden");
+            }
+        }
+
+        function navigateToHome() {
+            document.getElementById("viewAsk").classList.add("hidden");
+            document.getElementById("viewDetail").classList.add("hidden");
+            document.getElementById("viewAdmin").classList.add("hidden");
+            document.getElementById("viewLeaderboard").classList.add("hidden");
+            document.getElementById("viewHome").classList.remove("hidden");
+            renderQuestionsFeed("");
+        }
+
+        function actionSaveQuestion() {
+            let title = document.getElementById("formTitle").value.trim();
+            let category = document.getElementById("formCategory").value;
+            let content = document.getElementById("formContent").value.trim();
+            
+            if (!title || !content) {
+                alert("Vui lòng điền đầy đủ tiêu đề và nội dung câu hỏi!");
+                return;
+            }
+            
+            let newQuestion = {
+                id: Date.now(),
+                title: title,
+                category: category,
+                content: content,
+                author: sessionUser.username,
+                date: new Date().toLocaleString(),
+                solved: false,
+                rating: 0,
+                solver: "",
+                replies: []
+            };
+            
+            db_questions.push(newQuestion);
+            database.ref('tmath_questions_v2').set(db_questions);
+            
+            document.getElementById("formTitle").value = "";
+            document.getElementById("formContent").value = "";
+            
+            alert("Đăng câu hỏi thành công!");
+            navigateToHome();
+        }
+
+        function renderQuestionsFeed(keywordFilter = "") {
+            let box = document.getElementById("boxQuestionsList");
+            box.innerHTML = "";
+            let filtered = [];
+            for (let i = 0; i < db_questions.length; i++) {
+                let matchCategory = (selectedCategory === "all" || db_questions[i].category === selectedCategory);
+                let matchKeyword = (keywordFilter === "" || db_questions[i].title.toLowerCase().indexOf(keywordFilter.toLowerCase()) !== -1);
+                if (matchCategory && matchKeyword) {
+                    filtered.push(db_questions[i]);
+                }
+            }
+            if (filtered.length === 0) {
+                box.innerHTML = `
+                    <div class="empty-view">
+                        <h3 style="margin-bottom:6px;">Chưa có câu hỏi nào trong mục này</h3>
+                        <p style="margin:0; font-size:14px;">Hãy đặt câu hỏi đầu tiên!</p>
+                    </div>`;
+                return;
+            }
+            for (let i = 0; i < filtered.length; i++) {
+                let q = filtered[i];
+                let badgeHTML = q.solved ? `<span class="badge bg-solved">Đã giải</span>` : `<span class="badge bg-unsolved">Chưa giải</span>`;
+                let starsHTML = q.rating ? generateStarsUI(q.rating) : "";
+                box.innerHTML += `
+                    <div class="question-row" onclick="openPostDetail(${q.id})">
+                        <h3 class="question-title">
+                            <span class="badge bg-cate">${q.category}</span>
+                            ${q.title}
+                            ${badgeHTML}
+                            ${starsHTML}
+                        </h3>
+                        <div class="meta-line">
+                            <span>Người đăng: <b>${q.author}</b></span>
+                            <span>•</span>
+                            <span>Thời gian: ${q.date}</span>
+                            <span>•</span>
+                            <span>Phản hồi: ${q.replies ? q.replies.length : 0}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function openPostDetail(id) {
+            activeQuestionId = id;
+            document.getElementById("viewHome").classList.add("hidden");
+            document.getElementById("viewAsk").classList.add("hidden");
+            document.getElementById("viewAdmin").classList.add("hidden");
+            document.getElementById("viewLeaderboard").classList.add("hidden");
+            document.getElementById("viewDetail").classList.remove("hidden");
+            renderQuestionDetail(id);
+        }
+
+        function renderQuestionDetail(id) {
+            let q = db_questions.find(item => item.id === id);
+            if (!q) {
+                navigateToHome();
+                return;
+            }
+            
+            let detailCard = document.getElementById("postDetailCard");
+            let badgeHTML = q.solved ? `<span class="badge bg-solved">Đã giải quyết</span>` : `<span class="badge bg-unsolved">Chưa giải quyết</span>`;
+            let starsHTML = q.rating ? generateStarsUI(q.rating) : "";
+            
+            let deleteBtn = "";
+            if (sessionUser && (sessionUser.role === 'admin' || sessionUser.username === q.author)) {
+                deleteBtn = `<button class="btn-danger" style="padding:4px 10px; font-size:12px;" onclick="actionDeletePost(${q.id})">Xóa bài</button>`;
+            }
+            let reportBtn = "";
+            if (sessionUser && sessionUser.username !== q.author) {
+                reportBtn = `<button class="btn-secondary" style="padding:4px 10px; font-size:12px; background-color:#ef4444;" onclick="actionReportPost(${q.id}, '${q.title.replace(/'/g, "\\'")}')">Báo cáo</button>`;
+            }
+
+            detailCard.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                    <div>
+                        <span class="badge bg-cate" style="margin-bottom:8px;">${q.category}</span>
+                        <h2 style="margin:0 0 8px 0; font-size:22px; color:var(--primary);">${q.title} ${starsHTML}</h2>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        ${deleteBtn}
+                        ${reportBtn}
+                    </div>
+                </div>
+                <div class="meta-line" style="margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+                    <span>Người đăng: <b>${q.author}</b></span>
+                    <span>•</span>
+                    <span>Thời gian: ${q.date}</span>
+                    <span>•</span>
+                    <span>Trạng thái: ${badgeHTML}</span>
+                    ${q.solver ? `<span>•</span> <span>Người giải: <b style="color:var(--solved-color);">${q.solver}</b></span>` : ""}
+                </div>
+                <div style="font-size:16px; line-height:1.6; white-space:pre-wrap; color:var(--text-main); margin-bottom:12px;">${q.content}</div>
+            `;
+
+            // Admin rating panel
+            let adminPanel = document.getElementById("adminRatingPanel");
+            if (sessionUser && sessionUser.role === 'admin') {
+                adminPanel.classList.remove("hidden");
+                let solverSelect = document.getElementById("rateSolverSelect");
+                solverSelect.innerHTML = `<option value="">-- Chọn người giải đúng --</option>`;
+                
+                let uniqueRepliers = [];
+                if (q.replies) {
+                    q.replies.forEach(r => {
+                        if (!uniqueRepliers.includes(r.author)) {
+                            uniqueRepliers.push(r.author);
+                        }
+                    });
+                }
+                uniqueRepliers.forEach(name => {
+                    solverSelect.innerHTML += `<option value="${name}" ${q.solver === name ? 'selected' : ''}>${name}</option>`;
+                });
+            } else {
+                adminPanel.classList.add("hidden");
+            }
+
+            // Reply form
+            let replyForm = document.getElementById("replyFormContainer");
+            if (sessionUser) {
+                replyForm.classList.remove("hidden");
+            } else {
+                replyForm.classList.add("hidden");
+            }
+
+            // Render replies
+            let ansContainer = document.getElementById("answersContainer");
+            ansContainer.innerHTML = `<h3 style="margin-top:0; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">Phản hồi từ cộng đồng (${q.replies ? q.replies.length : 0})</h3>`;
+            
+            if (!q.replies || q.replies.length === 0) {
+                ansContainer.innerHTML += `<p style="color:var(--text-muted); text-align:center; margin:20px 0;">Chưa có phản hồi nào cho câu hỏi này. Hãy là người đầu tiên giúp đỡ!</p>`;
+            } else {
+                q.replies.forEach(r => {
+                    let isAdminStyle = r.role === 'admin' ? 'admin-style' : '';
+                    let adminBadge = r.role === 'admin' ? `<span class="badge bg-admin" style="font-size:10px; margin-left:6px;">Admin</span>` : '';
+                    ansContainer.innerHTML += `
+                        <div class="answer-block ${isAdminStyle}">
+                            <div class="meta-line" style="justify-content:space-between; margin-bottom:8px;">
+                                <span>Thành viên: <b>${r.author}</b> ${adminBadge}</span>
+                                <span>Lúc: ${r.date}</span>
+                            </div>
+                            <div style="font-size:15px; line-height:1.5; white-space:pre-wrap;">${r.content}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function actionSaveReply() {
+            let text = document.getElementById("replyTextarea").value.trim();
+            if (!text) {
+                alert("Vui lòng nhập nội dung phản hồi!");
+                return;
+            }
+            
+            let qIndex = db_questions.findIndex(item => item.id === activeQuestionId);
+            if (qIndex === -1) return;
+            
+            if (!db_questions[qIndex].replies) db_questions[qIndex].replies = [];
+            
+            db_questions[qIndex].replies.push({
+                id: Date.now(),
+                author: sessionUser.username,
+                content: text,
+                date: new Date().toLocaleString(),
+                role: sessionUser.role
+            });
+            
+            database.ref('tmath_questions_v2').set(db_questions);
+            document.getElementById("replyTextarea").value = "";
+            renderQuestionDetail(activeQuestionId);
+        }
+
+        function executeResolveAndAward() {
+            let rating = parseFloat(document.getElementById("rateStarSelect").value);
+            let solverName = document.getElementById("rateSolverSelect").value;
+            
+            let qIndex = db_questions.findIndex(item => item.id === activeQuestionId);
+            if (qIndex === -1) return;
+            
+            db_questions[qIndex].solved = true;
+            db_questions[qIndex].rating = rating;
+            db_questions[qIndex].solver = solverName;
+            
+            if (solverName) {
+                let pointsToAward = rating * 10;
+                let userObj = db_users.find(u => u.username === solverName);
+                if (userObj) {
+                    userObj.points = (userObj.points || 0) + pointsToAward;
+                    database.ref('tmath_users').set(db_users);
+                }
+            }
+            
+            database.ref('tmath_questions_v2').set(db_questions);
+            alert("Phê duyệt và cộng điểm thành công!");
+            renderQuestionDetail(activeQuestionId);
+        }
+
+        function actionDeletePost(id) {
+            if (confirm("Bạn chắc chắn muốn xóa bài đăng này không?")) {
+                db_questions = db_questions.filter(q => q.id !== id);
+                database.ref('tmath_questions_v2').set(db_questions);
+                navigateToHome();
+            }
+        }
+
+        function actionReportPost(id, title) {
+            let reason = prompt("Lý do báo cáo bài viết này vi phạm tiêu chuẩn cộng đồng:");
+            if (reason === null || reason.trim() === "") return;
+            let report = {
+                id: Date.now(),
+                postId: id,
+                postTitle: title,
+                sender: sessionUser.username,
+                reason: reason.trim(),
+                date: new Date().toLocaleString()
+            };
+            db_reports.push(report);
+            database.ref('tmath_reports_v2').set(db_reports);
+            alert("Cảm ơn bạn! Báo cáo đã được gửi tới Ban quản trị để kiểm duyệt.");
+        }
+
+        function renderLeaderboard() {
+            let tbody = document.getElementById("leaderboardRows");
+            tbody.innerHTML = "";
+            
+            let sortedUsers = [...db_users].sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 10);
+            
+            if (sortedUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Chưa có dữ liệu xếp hạng.</td></tr>`;
+                return;
+            }
+            
+            sortedUsers.forEach((u, index) => {
+                let rank = index + 1;
+                let rankClass = rank <= 3 ? `rank-${rank}` : '';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align:center;"><span class="rank-badge ${rankClass}">${rank}</span></td>
+                        <td><b>${u.username}</b> ${u.role === 'admin' ? '<span class="badge bg-admin">Admin</span>' : ''}</td>
+                        <td>${u.email}</td>
+                        <td style="text-align:right; font-weight:700; color:var(--primary);">${u.points || 0}đ</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function showAdminDashboard() {
+            selectedCategory = "admin";
+            document.getElementById("viewHome").classList.add("hidden");
+            document.getElementById("viewAsk").classList.add("hidden");
+            document.getElementById("viewDetail").classList.add("hidden");
+            document.getElementById("viewLeaderboard").classList.add("hidden");
+            document.getElementById("viewAdmin").classList.remove("hidden");
+            
+            document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
+            document.getElementById("menu-admin").classList.add("active");
+            
+            renderAdminReports();
+        }
+
+        function renderAdminReports() {
+            let box = document.getElementById("reportsListContainer");
+            box.innerHTML = "";
+            
+            if (!db_reports || db_reports.length === 0) {
+                box.innerHTML = `<div class="empty-view"><h3>Chưa có báo cáo vi phạm nào</h3></div>`;
+                return;
+            }
+            
+            db_reports.forEach(rep => {
+                box.innerHTML += `
+                    <div style="background-color: var(--bg-body); padding:16px; margin-bottom:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <p style="margin:0 0 6px 0; font-size:15px;">Bài đăng bị báo cáo: <a href="#" style="color:var(--primary); font-weight:600;" onclick="openPostDetail(${rep.postId})">${rep.postTitle}</a></p>
+                        <p style="margin:0 0 8px 0; font-size:14px; color: var(--admin-color);">Lý do vi phạm: <b>${rep.reason}</b></p>
+                        <div class="meta-line" style="justify-content:space-between; align-items:center;">
+                            <span>Người gửi báo cáo: <b>${rep.sender}</b> vào lúc ${rep.date}</span>
+                            <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="actionDismissReport(${rep.id})">Bỏ qua báo cáo</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function actionDismissReport(reportId) {
+            db_reports = db_reports.filter(rep => rep.id !== reportId);
+            database.ref('tmath_reports_v2').set(db_reports);
+            renderAdminReports();
+        }
+
+        function switchCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
+            
+            if (cat === 'leaderboard') {
+                document.getElementById("viewHome").classList.add("hidden");
+                document.getElementById("viewAsk").classList.add("hidden");
+                document.getElementById("viewDetail").classList.add("hidden");
+                document.getElementById("viewAdmin").classList.add("hidden");
+                document.getElementById("viewLeaderboard").classList.remove("hidden");
+                document.getElementById("menu-leaderboard").classList.add("active");
+                renderLeaderboard();
+            } else {
+                document.getElementById("viewLeaderboard").classList.add("hidden");
+                document.getElementById("viewAsk").classList.add("hidden");
+                document.getElementById("viewDetail").classList.add("hidden");
+                document.getElementById("viewAdmin").classList.add("hidden");
+                document.getElementById("viewHome").classList.remove("hidden");
+                
+                if (cat === 'all') document.getElementById("menu-all").classList.add("active");
+                else if (cat === 'Đại số') document.getElementById("menu-algebra").classList.add("active");
+                else if (cat === 'Hình học') document.getElementById("menu-geometry").classList.add("active");
+                else if (cat === 'Số học') document.getElementById("menu-theory").classList.add("active");
+                else if (cat === 'Tổ hợp') document.getElementById("menu-combinatorics").classList.add("active");
+                
+                let headingText = "Tất cả câu hỏi";
+                if (cat !== 'all') headingText = "Danh mục: " + cat;
+                document.getElementById("categoryHeading").innerText = headingText;
+                
+                document.getElementById("searchBox").value = "";
+                renderQuestionsFeed("");
+            }
+        }
+
+        function triggerSearch() {
+            let kw = document.getElementById("searchBox").value;
+            renderQuestionsFeed(kw);
+        }
+
+        // KÍCH HOẠT DIỄN ĐÀN KHI BẮT ĐẦU LOAD TRANG
+        window.onload = function() {
+            syncDatabase();
+            syncUserHeaderUIOnly();
+            renderQuestionsFeed("");
+        };
+    </script>
+</body>
+</html>
