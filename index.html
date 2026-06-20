@@ -863,6 +863,11 @@
             let rating = parseFloat(document.getElementById("rateStarSelect").value);
             let solverName = document.getElementById("rateSolverSelect").value;
             
+            if (solverName === "") {
+                alert("Vui lòng chọn thành viên đã giải quyết bài tập này!");
+                return;
+            }
+
             let qIndex = db_questions.findIndex(item => item.id === activeQuestionId);
             if (qIndex === -1) return;
             
@@ -870,9 +875,20 @@
             db_questions[qIndex].rating = rating;
             db_questions[qIndex].solver = solverName;
             
-            // NOTE: Việc cộng điểm được tách ra view Quản lý điểm độc lập
+            // TÍNH TOÁN VÀ CỘNG ĐIỂM TỰ ĐỘNG
+            let pointsEarned = (rating / 0.5) * 5;
+            let userIndex = db_users.findIndex(u => u.username === solverName);
+            
+            if (userIndex !== -1 && pointsEarned > 0) {
+                if (!db_users[userIndex].points) db_users[userIndex].points = 0;
+                db_users[userIndex].points += pointsEarned;
+                database.ref('tmath_users').set(db_users);
+                alert(`Phê duyệt lời giải thành công! Hệ thống đã tự động cộng ${pointsEarned} điểm cho thành viên ${solverName}.`);
+            } else {
+                alert("Phê duyệt lời giải thành công! (Không có điểm cộng do đánh giá 0 sao)");
+            }
+
             database.ref('tmath_questions_v2').set(db_questions);
-            alert("Phê duyệt lời giải thành công!");
             renderQuestionDetail(activeQuestionId);
         }
 
@@ -961,13 +977,6 @@
             });
         }
 
-        function actionDismissReport(reportId) {
-            db_reports = db_reports.filter(rep => rep.id !== reportId);
-            database.ref('tmath_reports_v2').set(db_reports);
-            renderAdminReports();
-        }
-
-        // TÍNH NĂNG MỚI: QUẢN LÝ ĐIỂM
         function showPointsDashboard() {
             selectedCategory = "admin_points";
             hideAllViews();
@@ -1035,7 +1044,6 @@
             }
         }
 
-        // TÍNH NĂNG MỚI: THÙNG RÁC
         function showTrashDashboard() {
             selectedCategory = "admin_trash";
             hideAllViews();
@@ -1066,16 +1074,6 @@
                     </div>
                 `;
             });
-        }
-
-        function actionRestorePost(id) {
-            let qIndex = db_questions.findIndex(q => q.id === id);
-            if (qIndex !== -1) {
-                db_questions[qIndex].deleted = false;
-                database.ref('tmath_questions_v2').set(db_questions);
-                alert("Khôi phục bài viết thành công! Bài viết đã xuất hiện lại ở trang chủ.");
-                renderTrashFeed();
-            }
         }
 
         function switchCategory(cat) {
