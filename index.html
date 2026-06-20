@@ -104,7 +104,7 @@
         /* FORM NHẬP */
         .form-control { margin-bottom: 16px; }
         .form-control label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
-        .form-control input, .form-control textarea, .form-control select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
+        .form-control input[type="text"], .form-control input[type="email"], .form-control input[type="password"], .form-control textarea, .form-control select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
         
         /* MODAL ĐĂNG NHẬP / ĐĂNG KÝ MỚI */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -256,6 +256,11 @@
                         <label>Nội dung chi tiết bài đăng:</label>
                         <textarea id="formContent" style="height: 180px;" placeholder="Ghi rõ đề bài, các bước đã làm thử hoặc vướng mắc cụ thể của bạn..."></textarea>
                     </div>
+                    <div class="form-control">
+                        <label>Đính kèm hình ảnh (Tùy chọn):</label>
+                        <input type="file" id="formImage" accept="image/*" onchange="handleImageUpload(event, 'post')" style="border: none; padding: 0;">
+                        <img id="formImagePreview" src="" style="max-width: 100%; max-height: 300px; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    </div>
                     <button class="btn-primary" onclick="actionSaveQuestion()">Đăng bài lên diễn đàn</button>
                     <button class="btn-secondary" style="margin-left: 8px;" onclick="navigateToHome()">Hủy bỏ</button>
                 </div>
@@ -296,6 +301,11 @@
                     <h3 style="margin-top: 0; margin-bottom: 12px;">Đóng góp câu trả lời của bạn</h3>
                     <div class="form-control">
                         <textarea id="replyTextarea" style="height: 100px;" placeholder="Viết câu trả lời hoặc hướng dẫn giải tại đây..."></textarea>
+                    </div>
+                    <div class="form-control">
+                        <label>Đính kèm hình ảnh (Tùy chọn):</label>
+                        <input type="file" id="replyImage" accept="image/*" onchange="handleImageUpload(event, 'reply')" style="border: none; padding: 0;">
+                        <img id="replyImagePreview" src="" style="max-width: 100%; max-height: 200px; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
                     </div>
                     <button class="btn-primary" onclick="actionSaveReply()">Gửi phản hồi</button>
                 </div>
@@ -404,7 +414,32 @@
         let activeQuestionId = null;
         let currentAuthMode = "login";
         let isFirebaseInitialized = false;
-        let leaderboardMode = "points"; // BỔ SUNG: Chế độ mặc định của bảng xếp hạng
+        let leaderboardMode = "points";
+
+        // Biến lưu trữ hình ảnh Base64
+        let currentPostImage = "";
+        let currentReplyImage = "";
+
+        // Hàm xử lý upload hình ảnh
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Str = e.target.result;
+                if (type === 'post') {
+                    currentPostImage = base64Str;
+                    document.getElementById('formImagePreview').src = base64Str;
+                    document.getElementById('formImagePreview').style.display = 'block';
+                } else if (type === 'reply') {
+                    currentReplyImage = base64Str;
+                    document.getElementById('replyImagePreview').src = base64Str;
+                    document.getElementById('replyImagePreview').style.display = 'block';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
 
         // XỬ LÝ KẾT NỐI ĐỒNG BỘ MẠNG TỰ ĐỘNG THỜI GIAN THỰC
         function syncDatabase() {
@@ -653,6 +688,13 @@
                 openLoginModal();
             } else {
                 hideAllViews();
+                
+                // Đặt lại trạng thái hình ảnh nếu trước đó có hủy
+                document.getElementById("formImage").value = "";
+                document.getElementById("formImagePreview").src = "";
+                document.getElementById("formImagePreview").style.display = "none";
+                currentPostImage = "";
+
                 document.getElementById("viewAsk").classList.remove("hidden");
             }
         }
@@ -678,13 +720,14 @@
                 title: title,
                 category: category,
                 content: content,
+                image: currentPostImage, // Bổ sung hình ảnh
                 author: sessionUser.username,
                 date: new Date().toLocaleString(),
                 solved: false,
                 rating: 0,
                 solver: "",
                 replies: [],
-                deleted: false // Soft delete flag
+                deleted: false
             };
             
             db_questions.push(newQuestion);
@@ -692,6 +735,12 @@
             
             document.getElementById("formTitle").value = "";
             document.getElementById("formContent").value = "";
+            
+            // Xóa dữ liệu hình ảnh sau khi đăng
+            document.getElementById("formImage").value = "";
+            document.getElementById("formImagePreview").src = "";
+            document.getElementById("formImagePreview").style.display = "none";
+            currentPostImage = "";
             
             alert("Đăng câu hỏi thành công!");
             navigateToHome();
@@ -769,6 +818,9 @@
                 reportBtn = `<button class="btn-secondary" style="padding:4px 10px; font-size:12px; background-color:#ef4444;" onclick="actionReportPost(${q.id}, '${q.title.replace(/'/g, "\\'")}')">Báo cáo</button>`;
             }
 
+            // Bổ sung thẻ hình ảnh nếu bài đăng có đính kèm ảnh
+            let questionImageHTML = q.image ? `<div style="margin-top: 16px;"><img src="${q.image}" style="max-width: 100%; border-radius: 8px; box-shadow: var(--shadow);"></div>` : "";
+
             detailCard.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                     <div>
@@ -789,9 +841,10 @@
                     ${q.solver ? `<span>•</span> <span>Người giải: <b style="color:var(--solved-color);">${q.solver}</b></span>` : ""}
                 </div>
                 <div style="font-size:16px; line-height:1.6; white-space:pre-wrap; color:var(--text-main); margin-bottom:12px;">${q.content}</div>
+                ${questionImageHTML}
             `;
 
-            // Admin rating panel (Điểm được chuyển ra panel riêng, panel này chỉ rating)
+            // Admin rating panel 
             let adminPanel = document.getElementById("adminRatingPanel");
             if (sessionUser && sessionUser.role === 'admin') {
                 adminPanel.classList.remove("hidden");
@@ -831,6 +884,10 @@
                 q.replies.forEach(r => {
                     let isAdminStyle = r.role === 'admin' ? 'admin-style' : '';
                     let adminBadge = r.role === 'admin' ? `<span class="badge bg-admin" style="font-size:10px; margin-left:6px;">Admin</span>` : '';
+                    
+                    // Hình ảnh bình luận nếu có
+                    let replyImageHTML = r.image ? `<div style="margin-top: 12px;"><img src="${r.image}" style="max-width: 100%; border-radius: 8px; box-shadow: var(--shadow);"></div>` : "";
+                    
                     ansContainer.innerHTML += `
                         <div class="answer-block ${isAdminStyle}">
                             <div class="meta-line" style="justify-content:space-between; margin-bottom:8px;">
@@ -838,6 +895,7 @@
                                 <span>Lúc: ${r.date}</span>
                             </div>
                             <div style="font-size:15px; line-height:1.5; white-space:pre-wrap;">${r.content}</div>
+                            ${replyImageHTML}
                         </div>
                     `;
                 });
@@ -846,8 +904,8 @@
 
         function actionSaveReply() {
             let text = document.getElementById("replyTextarea").value.trim();
-            if (!text) {
-                alert("Vui lòng nhập nội dung phản hồi!");
+            if (!text && !currentReplyImage) {
+                alert("Vui lòng nhập nội dung phản hồi hoặc đính kèm một hình ảnh!");
                 return;
             }
             
@@ -860,12 +918,20 @@
                 id: Date.now(),
                 author: sessionUser.username,
                 content: text,
+                image: currentReplyImage, // Bổ sung hình ảnh phản hồi
                 date: new Date().toLocaleString(),
                 role: sessionUser.role
             });
             
             database.ref('tmath_questions_v2').set(db_questions);
+            
+            // Xóa dữ liệu khung trả lời
             document.getElementById("replyTextarea").value = "";
+            document.getElementById("replyImage").value = "";
+            document.getElementById("replyImagePreview").src = "";
+            document.getElementById("replyImagePreview").style.display = "none";
+            currentReplyImage = "";
+            
             renderQuestionDetail(activeQuestionId);
         }
 
@@ -929,7 +995,7 @@
             alert("Cảm ơn bạn! Báo cáo đã được gửi tới Ban quản trị để kiểm duyệt.");
         }
 
-        // BỔ SUNG: Hàm chuyển đổi tiêu chí sắp xếp cho Leaderboard
+        // Hàm chuyển đổi tiêu chí sắp xếp cho Leaderboard
         function switchLeaderboardMode(mode) {
             leaderboardMode = mode;
             if (mode === 'points') {
@@ -942,7 +1008,7 @@
             renderLeaderboard();
         }
 
-        // CẢI TIẾN: Hàm render bảng xếp hạng hỗ trợ cả 2 tính năng (Điểm số / Số bài giải)
+        // Hàm render bảng xếp hạng hỗ trợ cả 2 tính năng (Điểm số / Số bài giải)
         function renderLeaderboard() {
             let tbody = document.getElementById("leaderboardRows");
             tbody.innerHTML = "";
@@ -963,7 +1029,7 @@
                 };
             });
 
-            // Bước 3: Sắp xếp dựa theo tiêu chí được chọn (leaderboardMode)
+            // Bước 3: Sắp xếp dựa theo tiêu chí được chọn
             if (leaderboardMode === "points") {
                 usersWithStats.sort((a, b) => (b.points || 0) - (a.points || 0));
             } else {
