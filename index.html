@@ -158,6 +158,10 @@
                     <label>Mật khẩu:</label>
                     <input type="password" id="loginPassword" placeholder="Nhập mật khẩu...">
                 </div>
+                <div class="form-control" style="text-align: left; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <input type="checkbox" id="chkRemember" style="width: auto; padding: 0; margin: 0; cursor: pointer;">
+                    <label for="chkRemember" style="margin: 0; font-weight: normal; cursor: pointer;">Ghi nhớ mật khẩu cho lần sau</label>
+                </div>
                 <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="executeLogin()">Xác nhận đăng nhập</button>
             </div>
 
@@ -214,7 +218,9 @@
 
                 <div id="adminPanelLink" class="hidden" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                     <div class="menu-title">Quản trị hệ thống</div>
-                    <div class="menu-item" id="menu-admin" onclick="showAdminDashboard()" style="color: var(--admin-color);"> Danh sách báo cáo</div>
+                    <div class="menu-item" id="menu-admin" onclick="showAdminDashboard()" style="color: var(--admin-color);"> Báo cáo vi phạm</div>
+                    <div class="menu-item" id="menu-points" onclick="showPointsDashboard()" style="color: var(--admin-color);"> Quản lý điểm</div>
+                    <div class="menu-item" id="menu-trash" onclick="showTrashDashboard()" style="color: var(--admin-color);"> Thùng rác</div>
                 </div>
             </div>
         </aside>
@@ -265,17 +271,17 @@
                         <div class="form-control" style="flex: 1; min-width: 200px;">
                             <label>Đánh giá độ khó bài đăng (Số sao):</label>
                             <select id="rateStarSelect">
-                                <option value="0">0 Sao (0 điểm)</option>
-                                <option value="0.5">0.5 Sao (+5 điểm)</option>
-                                <option value="1">1.0 Sao (+10 điểm)</option>
-                                <option value="1.5">1.5 Sao (+15 điểm)</option>
-                                <option value="2">2.0 Sao (+20 điểm)</option>
-                                <option value="2.5">2.5 Sao (+25 điểm)</option>
-                                <option value="3">3.0 Sao (+30 điểm)</option>
-                                <option value="3.5">3.5 Sao (+35 điểm)</option>
-                                <option value="4">4.0 Sao (+40 điểm)</option>
-                                <option value="4.5">4.5 Sao (+45 điểm)</option>
-                                <option value="5">5.0 Sao (+50 điểm)</option>
+                                <option value="0">0 Sao</option>
+                                <option value="0.5">0.5 Sao</option>
+                                <option value="1">1.0 Sao</option>
+                                <option value="1.5">1.5 Sao</option>
+                                <option value="2">2.0 Sao</option>
+                                <option value="2.5">2.5 Sao</option>
+                                <option value="3">3.0 Sao</option>
+                                <option value="3.5">3.5 Sao</option>
+                                <option value="4">4.0 Sao</option>
+                                <option value="4.5">4.5 Sao</option>
+                                <option value="5">5.0 Sao</option>
                             </select>
                         </div>
                         <div class="form-control" style="flex: 1; min-width: 200px;">
@@ -283,7 +289,7 @@
                             <select id="rateSolverSelect"></select>
                         </div>
                     </div>
-                    <button class="btn-primary" style="background-color: var(--solved-color);" onclick="executeResolveAndAward()">✓ Xác nhận hoàn thành & Cộng điểm</button>
+                    <button class="btn-primary" style="background-color: var(--solved-color);" onclick="executeResolveAndAward()">✓ Xác nhận hoàn thành</button>
                 </div>
 
                 <div id="replyFormContainer" class="card hidden">
@@ -308,7 +314,6 @@
                             <tr>
                                 <th style="width: 80px; text-align: center;">Hạng</th>
                                 <th>Thành viên</th>
-                                <th>Tài khoản Email</th>
                                 <th style="text-align: right; width: 15px; white-space: nowrap;">Điểm tích lũy</th>
                             </tr>
                         </thead>
@@ -323,25 +328,37 @@
                 </div>
                 <div class="card" id="reportsListContainer"></div>
             </div>
+
+            <div id="viewPoints" class="hidden">
+                <div class="main-heading-box">
+                    <h2 class="main-title" style="color: var(--admin-color);">Quản Lý Điểm Thành Viên</h2>
+                </div>
+                <div class="card" style="padding: 12px 24px;" id="pointsListContainer"></div>
+            </div>
+
+            <div id="viewTrash" class="hidden">
+                <div class="main-heading-box">
+                    <h2 class="main-title" style="color: var(--admin-color);">Thùng Rác (Bài Đã Xóa)</h2>
+                </div>
+                <div class="card" id="trashListContainer"></div>
+            </div>
         </main>
     </div>
 
     <script>
         // ==========================================
         // CẤU HÌNH KẾT NỐI MẠNG CLOUD FIREBASE REALTIME
-        // Bạn chỉ cần thay mã token nhận được từ trang Firebase Console vào đây là chạy trực tuyến toàn cầu!
         // ==========================================
         const firebaseConfig = {
-    apiKey: "AIzaSyB5VJ9XOQsY3xCSRU6dBhKCMK1rOqwjEJw",
-    authDomain: "tmath-b8bdc.firebaseapp.com",
-    databaseURL: "https://tmath-b8bdc-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "tmath-b8bdc",
-    storageBucket: "tmath-b8bdc.firebasestorage.app",
-    messagingSenderId: "1089082691244",
-    appId: "1:1089082691244:web:63bcad91c84fcd23781909"
-};
+            apiKey: "AIzaSyB5VJ9XOQsY3xCSRU6dBhKCMK1rOqwjEJw",
+            authDomain: "tmath-b8bdc.firebaseapp.com",
+            databaseURL: "https://tmath-b8bdc-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tmath-b8bdc",
+            storageBucket: "tmath-b8bdc.firebasestorage.app",
+            messagingSenderId: "1089082691244",
+            appId: "1:1089082691244:web:63bcad91c84fcd23781909"
+        };
         
-        // Tự động kiểm tra cấu hình để chạy dự phòng cục bộ nâng cao nếu bạn chưa kịp dán mã Firebase
         if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
             firebase.initializeApp(firebaseConfig);
         } else {
@@ -381,16 +398,14 @@
         let currentAuthMode = "login";
         let isFirebaseInitialized = false;
 
-        // XỬ LÝ KẾT NỐI ĐỒNG BỘ MẠNG TỰ ĐỘNG THỜI GIAN THỰC (REALTIME CLOUD)
+        // XỬ LÝ KẾT NỐI ĐỒNG BỘ MẠNG TỰ ĐỘNG THỜI GIAN THỰC
         function syncDatabase() {
             if (isFirebaseInitialized) return;
             isFirebaseInitialized = true;
 
-            // 1. Tự động cập nhật danh sách thành viên trực tuyến toàn cầu
             database.ref('tmath_users').on('value', (snapshot) => {
                 db_users = snapshot.val() || [];
                 
-                // Kiểm tra tài khoản Admin mặc định tối cao
                 let adminExists = db_users.some(u => u.email === "tmstuan3641@gmail.com");
                 if (!adminExists) {
                     db_users.push({
@@ -408,30 +423,39 @@
                 }
 
                 syncUserHeaderUIOnly();
-                if (!document.getElementById("viewLeaderboard").classList.contains("hidden")) {
-                    renderLeaderboard();
-                }
+                if (!document.getElementById("viewLeaderboard").classList.contains("hidden")) renderLeaderboard();
+                if (!document.getElementById("viewPoints").classList.contains("hidden")) renderPointsManager();
             });
 
-            // 2. Tự động cập nhật bài đăng mới nhất từ tất cả người dùng khác gửi lên mạng
             database.ref('tmath_questions_v2').on('value', (snapshot) => {
                 db_questions = snapshot.val() || [];
                 
-                // Tự động vẽ lại trang hiện hành ngay lập tức khi mạng dữ liệu thay đổi
                 if (!document.getElementById("viewHome").classList.contains("hidden")) {
                     renderQuestionsFeed(document.getElementById("searchBox").value);
                 } else if (!document.getElementById("viewDetail").classList.contains("hidden")) {
                     renderQuestionDetail(activeQuestionId);
+                } else if (!document.getElementById("viewTrash").classList.contains("hidden")) {
+                    renderTrashFeed();
                 }
             });
 
-            // 3. Tự động đồng bộ các báo cáo vi phạm về màn hình Admin
             database.ref('tmath_reports_v2').on('value', (snapshot) => {
                 db_reports = snapshot.val() || [];
                 if (!document.getElementById("viewAdmin").classList.contains("hidden")) {
                     renderAdminReports();
                 }
             });
+        }
+
+        // TIỆN ÍCH ẨN TẤT CẢ CÁC KHUNG VIEW CHÍNH
+        function hideAllViews() {
+            document.getElementById("viewHome").classList.add("hidden");
+            document.getElementById("viewAsk").classList.add("hidden");
+            document.getElementById("viewDetail").classList.add("hidden");
+            document.getElementById("viewLeaderboard").classList.add("hidden");
+            document.getElementById("viewAdmin").classList.add("hidden");
+            document.getElementById("viewPoints").classList.add("hidden");
+            document.getElementById("viewTrash").classList.add("hidden");
         }
 
         function generateStarsUI(rating) {
@@ -481,14 +505,19 @@
             }
         }
 
-        function syncUserHeaderUI() {
-            syncUserHeaderUIOnly();
-        }
-
         function openLoginModal() { 
             document.getElementById("loginModal").classList.remove("hidden");
             switchAuthMode("login");
             clearAuthInputs();
+
+            // Khôi phục dữ liệu đăng nhập nếu đã tích ghi nhớ trước đó
+            let savedEmail = localStorage.getItem('tmath_saved_email');
+            let savedPass = localStorage.getItem('tmath_saved_pass');
+            if(savedEmail && savedPass) {
+                document.getElementById("loginEmail").value = savedEmail;
+                document.getElementById("loginPassword").value = savedPass;
+                document.getElementById("chkRemember").checked = true;
+            }
         }
         
         function closeLoginModal() { 
@@ -503,6 +532,7 @@
             document.getElementById("regName").value = "";
             document.getElementById("regPassword").value = "";
             document.getElementById("regConfirmPassword").value = "";
+            document.getElementById("chkRemember").checked = false;
         }
 
         function switchAuthMode(mode) {
@@ -560,6 +590,7 @@
         function executeLogin() {
             let email = document.getElementById("loginEmail").value.trim().toLowerCase();
             let pass = document.getElementById("loginPassword").value;
+            let remember = document.getElementById("chkRemember").checked;
 
             if (email === "" || pass === "") {
                 alert("Vui lòng nhập đầy đủ thông tin Email và Mật khẩu!");
@@ -570,6 +601,15 @@
             if (!matchedUser) {
                 alert("Email hoặc Mật khẩu không chính xác, vui lòng kiểm tra lại!");
                 return;
+            }
+
+            // Xử lý ghi nhớ mật khẩu
+            if (remember) {
+                localStorage.setItem('tmath_saved_email', email);
+                localStorage.setItem('tmath_saved_pass', pass);
+            } else {
+                localStorage.removeItem('tmath_saved_email');
+                localStorage.removeItem('tmath_saved_pass');
             }
 
             let activeRole = (matchedUser.email === "tmstuan3641@gmail.com") ? "admin" : "member";
@@ -602,19 +642,13 @@
                 alert("Bạn phải đăng nhập tài khoản diễn đàn để đăng câu hỏi thảo luận!");
                 openLoginModal();
             } else {
-                document.getElementById("viewHome").classList.add("hidden");
-                document.getElementById("viewDetail").classList.add("hidden");
-                document.getElementById("viewAdmin").classList.add("hidden");
-                document.getElementById("viewLeaderboard").classList.add("hidden");
+                hideAllViews();
                 document.getElementById("viewAsk").classList.remove("hidden");
             }
         }
 
         function navigateToHome() {
-            document.getElementById("viewAsk").classList.add("hidden");
-            document.getElementById("viewDetail").classList.add("hidden");
-            document.getElementById("viewAdmin").classList.add("hidden");
-            document.getElementById("viewLeaderboard").classList.add("hidden");
+            hideAllViews();
             document.getElementById("viewHome").classList.remove("hidden");
             renderQuestionsFeed("");
         }
@@ -639,7 +673,8 @@
                 solved: false,
                 rating: 0,
                 solver: "",
-                replies: []
+                replies: [],
+                deleted: false // Soft delete flag
             };
             
             db_questions.push(newQuestion);
@@ -659,7 +694,9 @@
             for (let i = 0; i < db_questions.length; i++) {
                 let matchCategory = (selectedCategory === "all" || db_questions[i].category === selectedCategory);
                 let matchKeyword = (keywordFilter === "" || db_questions[i].title.toLowerCase().indexOf(keywordFilter.toLowerCase()) !== -1);
-                if (matchCategory && matchKeyword) {
+                
+                // Lọc bỏ các bài viết bị xóa (nằm trong thùng rác)
+                if (matchCategory && matchKeyword && !db_questions[i].deleted) {
                     filtered.push(db_questions[i]);
                 }
             }
@@ -697,10 +734,7 @@
 
         function openPostDetail(id) {
             activeQuestionId = id;
-            document.getElementById("viewHome").classList.add("hidden");
-            document.getElementById("viewAsk").classList.add("hidden");
-            document.getElementById("viewAdmin").classList.add("hidden");
-            document.getElementById("viewLeaderboard").classList.add("hidden");
+            hideAllViews();
             document.getElementById("viewDetail").classList.remove("hidden");
             renderQuestionDetail(id);
         }
@@ -718,7 +752,7 @@
             
             let deleteBtn = "";
             if (sessionUser && (sessionUser.role === 'admin' || sessionUser.username === q.author)) {
-                deleteBtn = `<button class="btn-danger" style="padding:4px 10px; font-size:12px;" onclick="actionDeletePost(${q.id})">Xóa bài</button>`;
+                deleteBtn = `<button class="btn-danger" style="padding:4px 10px; font-size:12px;" onclick="actionDeletePost(${q.id})">Đưa vào thùng rác</button>`;
             }
             let reportBtn = "";
             if (sessionUser && sessionUser.username !== q.author) {
@@ -747,7 +781,7 @@
                 <div style="font-size:16px; line-height:1.6; white-space:pre-wrap; color:var(--text-main); margin-bottom:12px;">${q.content}</div>
             `;
 
-            // Admin rating panel
+            // Admin rating panel (Điểm được chuyển ra panel riêng, panel này chỉ rating)
             let adminPanel = document.getElementById("adminRatingPanel");
             if (sessionUser && sessionUser.role === 'admin') {
                 adminPanel.classList.remove("hidden");
@@ -836,25 +870,20 @@
             db_questions[qIndex].rating = rating;
             db_questions[qIndex].solver = solverName;
             
-            if (solverName) {
-                let pointsToAward = rating * 10;
-                let userObj = db_users.find(u => u.username === solverName);
-                if (userObj) {
-                    userObj.points = (userObj.points || 0) + pointsToAward;
-                    database.ref('tmath_users').set(db_users);
-                }
-            }
-            
+            // NOTE: Việc cộng điểm được tách ra view Quản lý điểm độc lập
             database.ref('tmath_questions_v2').set(db_questions);
-            alert("Phê duyệt và cộng điểm thành công!");
+            alert("Phê duyệt lời giải thành công!");
             renderQuestionDetail(activeQuestionId);
         }
 
         function actionDeletePost(id) {
-            if (confirm("Bạn chắc chắn muốn xóa bài đăng này không?")) {
-                db_questions = db_questions.filter(q => q.id !== id);
-                database.ref('tmath_questions_v2').set(db_questions);
-                navigateToHome();
+            if (confirm("Bạn chắc chắn muốn đưa bài đăng này vào thùng rác không? (Có thể khôi phục sau)")) {
+                let qIndex = db_questions.findIndex(q => q.id === id);
+                if (qIndex !== -1) {
+                    db_questions[qIndex].deleted = true;
+                    database.ref('tmath_questions_v2').set(db_questions);
+                    navigateToHome();
+                }
             }
         }
 
@@ -881,7 +910,7 @@
             let sortedUsers = [...db_users].sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 10);
             
             if (sortedUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Chưa có dữ liệu xếp hạng.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Chưa có dữ liệu xếp hạng.</td></tr>`;
                 return;
             }
             
@@ -892,7 +921,6 @@
                     <tr>
                         <td style="text-align:center;"><span class="rank-badge ${rankClass}">${rank}</span></td>
                         <td><b>${u.username}</b> ${u.role === 'admin' ? '<span class="badge bg-admin">Admin</span>' : ''}</td>
-                        <td>${u.email}</td>
                         <td style="text-align:right; font-weight:700; color:var(--primary);">${u.points || 0}đ</td>
                     </tr>
                 `;
@@ -900,11 +928,8 @@
         }
 
         function showAdminDashboard() {
-            selectedCategory = "admin";
-            document.getElementById("viewHome").classList.add("hidden");
-            document.getElementById("viewAsk").classList.add("hidden");
-            document.getElementById("viewDetail").classList.add("hidden");
-            document.getElementById("viewLeaderboard").classList.add("hidden");
+            selectedCategory = "admin_reports";
+            hideAllViews();
             document.getElementById("viewAdmin").classList.remove("hidden");
             
             document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
@@ -942,23 +967,128 @@
             renderAdminReports();
         }
 
+        // TÍNH NĂNG MỚI: QUẢN LÝ ĐIỂM
+        function showPointsDashboard() {
+            selectedCategory = "admin_points";
+            hideAllViews();
+            document.getElementById("viewPoints").classList.remove("hidden");
+            
+            document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
+            document.getElementById("menu-points").classList.add("active");
+            
+            renderPointsManager();
+        }
+
+        function renderPointsManager() {
+            let container = document.getElementById("pointsListContainer");
+            container.innerHTML = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Thành viên</th>
+                            <th>Email</th>
+                            <th>Điểm hiện tại</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pointsTableBody"></tbody>
+                </table>
+            `;
+            let tbody = document.getElementById("pointsTableBody");
+            db_users.forEach((u, idx) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${u.username}</b> ${u.role === 'admin' ? '<span class="badge bg-admin">Admin</span>' : ''}</td>
+                        <td>${u.email}</td>
+                        <td style="font-weight:bold; color:var(--primary);">${u.points || 0}đ</td>
+                        <td>
+                            <div style="display:flex; gap:8px;">
+                                <input type="number" id="pointInput_${idx}" placeholder="Số điểm..." style="width: 100px; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+                                <button class="btn-primary" style="padding: 6px 12px;" onclick="actionUpdatePoints('${u.email}', ${idx}, true)">Cộng</button>
+                                <button class="btn-danger" style="padding: 6px 12px;" onclick="actionUpdatePoints('${u.email}', ${idx}, false)">Trừ</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function actionUpdatePoints(email, idx, isAdd) {
+            let inputVal = document.getElementById(`pointInput_${idx}`).value;
+            let val = parseInt(inputVal);
+            if(isNaN(val) || val <= 0) {
+                alert("Vui lòng nhập một số điểm hợp lệ lớn hơn 0!");
+                return;
+            }
+            let userIndex = db_users.findIndex(u => u.email === email);
+            if(userIndex !== -1) {
+                if(!db_users[userIndex].points) db_users[userIndex].points = 0;
+                if(isAdd) {
+                    db_users[userIndex].points += val;
+                } else {
+                    db_users[userIndex].points -= val;
+                    if(db_users[userIndex].points < 0) db_users[userIndex].points = 0; // Không để âm
+                }
+                database.ref('tmath_users').set(db_users);
+                alert("Cập nhật điểm thành công!");
+                renderPointsManager();
+            }
+        }
+
+        // TÍNH NĂNG MỚI: THÙNG RÁC
+        function showTrashDashboard() {
+            selectedCategory = "admin_trash";
+            hideAllViews();
+            document.getElementById("viewTrash").classList.remove("hidden");
+            
+            document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
+            document.getElementById("menu-trash").classList.add("active");
+            
+            renderTrashFeed();
+        }
+
+        function renderTrashFeed() {
+            let box = document.getElementById("trashListContainer");
+            box.innerHTML = "";
+            let deletedPosts = db_questions.filter(q => q.deleted === true);
+            
+            if (deletedPosts.length === 0) {
+                box.innerHTML = `<div class="empty-view"><h3>Thùng rác đang trống</h3></div>`;
+                return;
+            }
+            
+            deletedPosts.forEach(q => {
+                box.innerHTML += `
+                    <div style="background-color: var(--bg-body); padding:16px; margin-bottom:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <p style="margin:0 0 6px 0; font-size:16px; font-weight:bold; color:var(--text-main);">${q.title}</p>
+                        <p style="margin:0 0 8px 0; font-size:14px; color:var(--text-muted);">Người đăng: ${q.author} | Xóa lúc: ${q.date}</p>
+                        <button class="btn-primary" style="padding:6px 12px; font-size:12px; background-color: var(--solved-color);" onclick="actionRestorePost(${q.id})">Khôi phục bài viết</button>
+                    </div>
+                `;
+            });
+        }
+
+        function actionRestorePost(id) {
+            let qIndex = db_questions.findIndex(q => q.id === id);
+            if (qIndex !== -1) {
+                db_questions[qIndex].deleted = false;
+                database.ref('tmath_questions_v2').set(db_questions);
+                alert("Khôi phục bài viết thành công! Bài viết đã xuất hiện lại ở trang chủ.");
+                renderTrashFeed();
+            }
+        }
+
         function switchCategory(cat) {
             selectedCategory = cat;
             document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
             
+            hideAllViews();
+            
             if (cat === 'leaderboard') {
-                document.getElementById("viewHome").classList.add("hidden");
-                document.getElementById("viewAsk").classList.add("hidden");
-                document.getElementById("viewDetail").classList.add("hidden");
-                document.getElementById("viewAdmin").classList.add("hidden");
                 document.getElementById("viewLeaderboard").classList.remove("hidden");
                 document.getElementById("menu-leaderboard").classList.add("active");
                 renderLeaderboard();
             } else {
-                document.getElementById("viewLeaderboard").classList.add("hidden");
-                document.getElementById("viewAsk").classList.add("hidden");
-                document.getElementById("viewDetail").classList.add("hidden");
-                document.getElementById("viewAdmin").classList.add("hidden");
                 document.getElementById("viewHome").classList.remove("hidden");
                 
                 if (cat === 'all') document.getElementById("menu-all").classList.add("active");
