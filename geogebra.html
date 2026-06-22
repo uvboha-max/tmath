@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGebra Workspace Pro - Phiên Bản V8 Hệ Thống File & Ẩn Hiện</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        /* Thanh công cụ bên trái (Sidebar) */
+        #sidebar {
+            width: 350px;
+            background-color: #1e293b;
+            border-right: 2px solid #334155;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            padding: 15px;
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Hệ thống quản lý File */
+        .file-manager {
+            padding: 12px 15px;
+            background-color: #111827;
+            border-bottom: 2px solid #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .file-manager label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .file-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .file-select {
+            flex: 1;
+            padding: 6px 10px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-file {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-file.create { background-color: #10b981; }
+        .btn-file.create:hover { background-color: #059669; }
+        .btn-file.delete { background-color: #ef4444; }
+        .btn-file.delete:hover { background-color: #dc2626; }
+
+        .controls {
+            padding: 10px 15px;
+            display: flex;
+            gap: 8px;
+            background-color: #1e293b;
+        }
+
+        .btn-ctrl {
+            flex: 1;
+            padding: 8px;
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: #f1f5f9;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-ctrl:hover { background-color: #475569; }
+        .btn-ctrl.active { background-color: #0284c7; border-color: #38bdf8; }
+
+        /* Vùng cuộn danh mục công cụ */
+        .tool-box {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .category-header {
+            background-color: #1e293b;
+            padding: 12px 15px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #38bdf8;
+            cursor: pointer;
+            border-bottom: 1px solid #273549;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 0.5px;
+        }
+        .category-header:hover { background-color: #24334d; }
+
+        .category-content {
+            padding: 10px 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            background-color: #111827;
+            border-bottom: 1px solid #273549;
+        }
+
+        .category-content.collapsed { display: none; }
+
+        .btn-tool {
+            padding: 9px 8px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: left;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-tool:hover {
+            background-color: #374151;
+            color: #fff;
+            border-color: #38bdf8;
+        }
+
+        .btn-tool.active {
+            background-color: #2563eb;
+            border-color: #60a5fa;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Vùng Canvas đồ họa */
+        #workspace {
+            flex: 1;
+            position: relative;
+            background-color: #0f172a;
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #94a3b8;
+            z-index: 5;
+        }
+
+        .status-bar span {
+            color: #38bdf8;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        .btn-zoom {
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .btn-zoom:hover { background-color: #475569; }
+
+        #txtZoom {
+            font-weight: 700;
+            font-size: 13px;
+            color: #38bdf8;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="header">
+            <h1>📐 TMath Workspace</h1>
+        </div>
+
+        <div class="file-manager">
+            <label>📁 Quản lý tập tin hình học</label>
+            <div class="file-row">
+                <select id="fileSelect" class="file-select" onchange="switchFile(this.value)"></select>
+                <button class="btn-file create" onclick="createNewFile()">+</button>
+                <button class="btn-file delete" onclick="deleteCurrentFile()">🗑️</button>
+            </div>
+        </div>
+
+        <div class="controls" style="border-bottom: none; padding-bottom: 4px;">
+            <button class="btn-ctrl active" id="btnGrid" onclick="toggleGrid()">🌐 Lưới: BẬT</button>
+            <button class="btn-ctrl" id="btnAxes" onclick="toggleAxes()">📈 Trục: ẨN</button>
+        </div>
+
+        <div class="controls" style="padding-top: 0; padding-bottom: 12px; border-bottom: 2px solid #334155;">
+            <button class="btn-ctrl" id="btnUndo" onclick="undo()">↩️ Undo (Ctrl+Z)</button>
+            <button class="btn-ctrl" id="btnRedo" onclick="redo()">↪️ Redo (Ctrl+Y)</button>
+        </div>
+
+        <div class="tool-box">
+            <div class="category-header" onclick="toggleCategory(this)">📍 Điểm <span class="arrow">▼</span></div>
+            <div class="category-content">
+                <button class="btn-tool active" onclick="setMode('move', this)">➡️ Di chuyển</button>
+                <button class="btn-tool" onclick="setMode('point', this)">📍 Điểm mới</button>
+                <button class="btn-tool" onclick="setMode('midpoint', this)">🌓 Trung điểm / Tâm</button>
+                <button class="btn-tool" onclick="setMode('intersection', this)">✖️ Giao điểm</button>
+                <button class="btn-tool" onclick="setMode('rename_point', this)">🏷️ Đổi tên điểm</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">📏 Đường Thẳng <span class="arrow">▼</span></div>
+            <div class="category-content">
+                <button class="btn-tool" onclick="setMode('segment', this)">➖ Đoạn thẳng</button>
+                <button class="btn-tool" onclick="setMode('line', this)">♾️ Đường thẳng</button>
+                <button class="btn-tool" onclick="setMode('ray', this)">↗️ Tia</button>
+                <button class="btn-tool" onclick="setMode('vector', this)">🏹 Vector mũi tên</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">📐 Đường Đặc Biệt <span class="arrow">▼</span></div>
+            <div class="category-content">
+                <button class="btn-tool" onclick="setMode('perpendicular', this)">🛑 Đường vuông góc</button>
+                <button class="btn-tool" onclick="setMode('parallel', this)">🔄 Đường song song</button>
+                <button class="btn-tool" onclick="setMode('bisector', this)">📐 Đường trung trực</button>
+                <button class="btn-tool" onclick="setMode('bisector_3p', this)">🔀 Đường phân giác</button>
+                <button class="btn-tool" onclick="setMode('tangent', this)">🎯 Tiếp tuyến</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">⭕ Đường Tròn & Cung Tròn <span class="arrow">▼</span></div>
+            <div class="category-content">
+                <button class="btn-tool" onclick="setMode('circle', this)">⭕ Tâm qua điểm</button>
+                <button class="btn-tool" onclick="setMode('circle_radius', this)">🎯 Tâm và Bán kính</button>
+                <button class="btn-tool" onclick="setMode('circle_3p', this)">⭕ Tròn qua 3 điểm</button>
+                <button class="btn-tool" onclick="setMode('compass', this)">📐 Compa</button>
+                <button class="btn-tool" onclick="setMode('semicircle', this)">🌗 Nửa đường tròn</button>
+                <button class="btn-tool" onclick="setMode('arc_center_2p', this)">🌙 Cung tròn</button>
+                <button class="btn-tool" onclick="setMode('arc_3p', this)">🌀 Cung qua 3 điểm</button>
+                <button class="btn-tool" onclick="setMode('sector_center_2p', this)">🍕 Quạt tròn</button>
+                <button class="btn-tool" onclick="setMode('sector_3p', this)">🍉 Quạt qua 3 điểm</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">🔺 Đa Giác <span class="arrow">▼</span></div>
+            <div class="category-content collapsed">
+                <button class="btn-tool" onclick="setMode('polygon', this)">🔺 Đa giác tự do</button>
+                <button class="btn-tool" onclick="setMode('reg_polygon', this)">🔷 Đa giác đều</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">📊 Đo Lường & Biến Hình <span class="arrow">▼</span></div>
+            <div class="category-content collapsed">
+                <button class="btn-tool" onclick="setMode('distance', this)">📏 Khoảng cách</button>
+                <button class="btn-tool" onclick="setMode('angle', this)">📐 Đo góc (3 điểm)</button>
+                <button class="btn-tool" onclick="setMode('reflect_line', this)">🪞 Đối xứng trục</button>
+                <button class="btn-tool" onclick="setMode('text', this)">📝 Văn bản</button>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory(this)">🧹 Hệ thống <span class="arrow">▼</span></div>
+            <div class="category-content collapsed">
+                <button class="btn-tool" style="background-color: #4f46e5; color: white;" onclick="setMode('hide_show', this)">👁️ Ẩn / Hiện đối tượng</button>
+                <button class="btn-tool" onclick="setMode('delete', this)">❌ Xóa đối tượng</button>
+                <button class="btn-tool" style="background-color: #991b1b; color: white;" onclick="clearAll()">🧹 Xóa toàn bộ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="workspace">
+        <div class="status-bar">
+            Hướng dẫn: <span id="txtMode">Kéo thả để di chuyển. Dùng Ctrl+Z (Undo), Ctrl+Y (Redo). Chế độ tự động lưu tiến độ đang chạy.</span>
+        </div>
+        
+        <div class="zoom-controls">
+            <button class="btn-zoom" onclick="zoomOut()">➖</button>
+            <span id="txtZoom">100%</span>
+            <button class="btn-zoom" onclick="zoomIn()">➕</button>
+            <button class="btn-zoom" style="color: #94a3b8;" onclick="resetZoom()">🔄</button>
+        </div>
+
+        <canvas id="geoCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('geoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let showGrid = true;
+        let showAxes = false;
+        let currentMode = 'move';
+
+        let scale = 1.0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+
+        // Lõi lưu trữ thực thể hình học toàn cục
+        let points = [];        
+        let lines = [];         
+        let circles = [];       
+        let polygons = [];      
+        let measurements = [];  
+        let texts = [];
+        let arcs = []; 
+
+        // Ngăn xếp lịch sử
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_HISTORY = 50;
+        let preMoveSnapshot = null;
+        let startPointPos = { x: 0, y: 0 };
+
+        // --- ENGINE QUẢN LÝ FILE & AUTO-SAVE ---
+        let dbFiles = {}; 
+        let currentFileId = "";
+
+        function initFileSystem() {
+            let savedFiles = localStorage.getItem('geo_workspace_files');
+            let activeId = localStorage.getItem('geo_workspace_active_id');
+            
+            if (savedFiles) {
+                dbFiles = JSON.parse(savedFiles);
+            }
+            
+            // Nếu chưa có file nào trong LocalStorage, khởi tạo file mặc định ban đầu
+            if (Object.keys(dbFiles).length === 0) {
+                let defaultId = 'file_' + Date.now();
+                dbFiles[defaultId] = {
+                    name: "Bài tập Hình học 1",
+                    state: createSnapshot()
+                };
+                activeId = defaultId;
+            }
+
+            if (!dbFiles[activeId]) {
+                activeId = Object.keys(dbFiles)[0];
+            }
+
+            currentFileId = activeId;
+            localStorage.setItem('geo_workspace_active_id', currentFileId);
+            localStorage.setItem('geo_workspace_files', JSON.stringify(dbFiles));
+
+            renderFileDropdown();
+            loadWorkspaceFromState(dbFiles[currentFileId].state);
+        }
+
+        function renderFileDropdown() {
+            const select = document.getElementById('fileSelect');
+            select.innerHTML = '';
+            for (let id in dbFiles) {
+                let opt = document.createElement('option');
+                opt.value = id;
+                opt.innerText = dbFiles[id].name;
+                if (id === currentFileId) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function createNewFile() {
+            let name = prompt("Nhập tên cho file hình học mới:", "Hình vẽ mới " + (Object.keys(dbFiles).length + 1));
+            if (!name || !name.trim()) return;
+
+            // Tự động lưu tiến độ file cũ trước khi chuyển
+            autoSaveProgress();
+
+            let newId = 'file_' + Date.now();
+            dbFiles[newId] = {
+                name: name.trim(),
+                state: { points: [], lines: [], circles: [], polygons: [], measurements: [], texts: [], arcs: [] }
+            };
+            currentFileId = newId;
+            
+            undoStack = [];
+            redoStack = [];
+            
+            autoSaveProgress();
+            renderFileDropdown();
+            loadWorkspaceFromState(dbFiles[currentFileId].state);
+            updateUndoRedoButtons();
+        }
+
+        function deleteCurrentFile() {
+            if (Object.keys(dbFiles).length <= 1) {
+                alert("Bạn không thể xóa file duy nhất còn lại! Hãy tạo file mới trước.");
+                return;
+            }
+            if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn file "${dbFiles[currentFileId].name}" không?`)) return;
+
+            delete dbFiles[currentFileId];
+            currentFileId = Object.keys(dbFiles)[0];
+            
+            undoStack = [];
+            redoStack = [];
+
+            localStorage.setItem('geo_workspace_files', JSON.stringify(dbFiles));
+            localStorage.setItem('geo_workspace_active_id', currentFileId);
+            
+            renderFileDropdown();
+            loadWorkspaceFromState(dbFiles[currentFileId].state);
+            updateUndoRedoButtons();
+        }
+
+        function switchFile(id) {
+            if (!dbFiles[id]) return;
+            autoSaveProgress(); // Lưu file hiện tại
+
+            currentFileId = id;
+            localStorage.setItem('geo_workspace_active_id', currentFileId);
+            
+            undoStack = [];
+            redoStack = [];
+
+            loadWorkspaceFromState(dbFiles[currentFileId].state);
+            updateUndoRedoButtons();
+        }
+
+        function autoSaveProgress() {
+            if (!currentFileId || !dbFiles[currentFileId]) return;
+            dbFiles[currentFileId].state = createSnapshot();
+            localStorage.setItem('geo_workspace_files', JSON.stringify(dbFiles));
+        }
+
+        function loadWorkspaceFromState(state) {
+            if (!state) return;
+            points = state.points || [];
+            lines = state.lines || [];
+            circles = state.circles || [];
+            polygons = state.polygons || [];
+            measurements = state.measurements || [];
+            texts = state.texts || [];
+            arcs = state.arcs || [];
+            
+            activePoint = null; activeLine = null; tempPolyPoints = []; selectedPoint = null;
+            resetZoom();
+        }
+
+        // --- ĐỘNG LỰC HỌC TỰ ĐỘNG ĐẶT TÊN TÂM O1, O2... ---
+        function getNextCenterLabel() {
+            let max = 0;
+            points.forEach(p => {
+                if (p.label && p.label.startsWith('O')) {
+                    let num = parseInt(p.label.substring(1));
+                    if (!isNaN(num) && num > max) max = num;
+                }
+            });
+            return 'O' + (max + 1);
+        }
+
+        function createSnapshot() {
+            return {
+                points: JSON.parse(JSON.stringify(points)),
+                lines: JSON.parse(JSON.stringify(lines)),
+                circles: JSON.parse(JSON.stringify(circles)),
+                polygons: JSON.parse(JSON.stringify(polygons)),
+                measurements: JSON.parse(JSON.stringify(measurements)),
+                texts: JSON.parse(JSON.stringify(texts)),
+                arcs: JSON.parse(JSON.stringify(arcs))
+            };
+        }
+
+        function saveState() {
+            undoStack.push(createSnapshot());
+            if (undoStack.length > MAX_HISTORY) undoStack.shift();
+            redoStack = []; 
+            updateUndoRedoButtons();
+            autoSaveProgress(); // Đồng bộ Auto-Save tiến độ ngay khi phát sinh thay đổi
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            redoStack.push(createSnapshot());
+            
+            const previous = undoStack.pop();
+            loadWorkspaceHistory(previous);
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            undoStack.push(createSnapshot());
+            
+            const next = redoStack.pop();
+            loadWorkspaceHistory(next);
+        }
+
+        function loadWorkspaceHistory(snap) {
+            points = snap.points; lines = snap.lines; circles = snap.circles;
+            polygons = snap.polygons; measurements = snap.measurements; texts = snap.texts; arcs = snap.arcs;
+            activePoint = null; activeLine = null; tempPolyPoints = []; selectedPoint = null;
+            updateUndoRedoButtons();
+            autoSaveProgress();
+            draw();
+        }
+
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('btnUndo');
+            const redoBtn = document.getElementById('btnRedo');
+            
+            undoBtn.style.opacity = undoStack.length > 0 ? "1" : "0.4";
+            undoBtn.style.cursor = undoStack.length > 0 ? "pointer" : "not-allowed";
+            
+            redoBtn.style.opacity = redoStack.length > 0 ? "1" : "0.4";
+            redoBtn.style.cursor = redoStack.length > 0 ? "pointer" : "not-allowed";
+        }
+
+        // Hotkeys Ctrl+Z, Ctrl+Y toàn cục
+        window.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            let key = e.key.toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && key === 'z') { e.preventDefault(); undo(); }
+            if ((e.ctrlKey || e.metaKey) && key === 'y') { e.preventDefault(); redo(); }
+        });
+
+        let selectedPoint = null;
+        let activePoint = null;
+        let activeLine = null;
+        let tempPolyPoints = []; 
+        let mousePos = { x: 0, y: 0 };
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function toggleCategory(el) {
+            const content = el.nextElementSibling;
+            content.classList.toggle('collapsed');
+            el.querySelector('.arrow').innerText = content.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            document.getElementById('btnGrid').innerText = showGrid ? "🌐 Lưới: BẬT" : "🌐 Lưới: ẨN";
+            document.getElementById('btnGrid').classList.toggle('active', showGrid);
+            draw();
+        }
+
+        function toggleAxes() {
+            showAxes = !showAxes;
+            document.getElementById('btnAxes').innerText = showAxes ? "📈 Trục: BẬT" : "📈 Trục: ẨN";
+            document.getElementById('btnAxes').classList.toggle('active', showAxes);
+            draw();
+        }
+
+        function zoomIn() { modifyZoom(1.15); }
+        function zoomOut() { modifyZoom(1 / 1.15); }
+        function resetZoom() { scale = 1.0; offsetX = 0; offsetY = 0; updateZoomDisplay(); draw(); }
+        function modifyZoom(factor) {
+            let cx = canvas.width / 2; let cy = canvas.height / 2;
+            let wx = (cx - offsetX) / scale; let wy = (cy - offsetY) / scale;
+            scale *= factor; scale = Math.max(0.15, Math.min(scale, 8.0));
+            offsetX = cx - wx * scale; offsetY = cy - wy * scale;
+            updateZoomDisplay(); draw();
+        }
+        function updateZoomDisplay() { document.getElementById('txtZoom').innerText = Math.round(scale * 100) + '%'; }
+
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            let factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+            let rect = canvas.getBoundingClientRect();
+            let sx = e.clientX - rect.left; let sy = e.clientY - rect.top;
+            let wx = (sx - offsetX) / scale; let wy = (sy - offsetY) / scale;
+            scale *= factor; scale = Math.max(0.15, Math.min(scale, 8.0));
+            offsetX = sx - wx * scale; offsetY = sy - wy * scale;
+            updateZoomDisplay(); draw();
+        }, { passive: false });
+
+        function setMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            const guides = {
+                'move': 'Kéo thả điểm tự do. Nhấp đúp chuột để đổi tên nhãn đại diện.',
+                'hide_show': 'Click chọn một thực thể (Điểm, Đường, Tròn) để ẨN hoặc HIỆN nó.',
+                'point': 'Click điểm trống bất kỳ để tạo điểm mới tự do.',
+                'circle': 'Chọn Điểm tâm, click điểm biên. Tâm chưa đặt tên sẽ tự gắn dạng O1, O2...',
+                'circle_3p': 'Chọn lần lượt 3 điểm. Hệ thống tự động tạo thêm một điểm tâm tên O1, O2... phụ thuộc động.',
+                'delete': 'Click vào một đối tượng bất kỳ để xóa bỏ cấu trúc liên kết.'
+            };
+            document.getElementById('txtMode').innerText = guides[mode] || 'Click chọn điểm mốc hành động trên hệ trục tọa độ.';
+            activePoint = null; activeLine = null; tempPolyPoints = []; draw();
+        }
+
+        function clearAll() {
+            if(confirm("Xóa sạch toàn bộ cấu trúc hình học hiện tại?")) {
+                saveState();
+                points = []; lines = []; circles = []; polygons = []; measurements = []; texts = []; arcs = [];
+                activePoint = null; activeLine = null; tempPolyPoints = []; resetZoom();
+                autoSaveProgress();
+            }
+        }
+
+        function getCircumcircle(p1, p2, p3) {
+            let d = 2 * (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y));
+            if (Math.abs(d) < 0.005) return null;
+            let ux = ((p1.x*p1.x + p1.y*p1.y) * (p2.y - p3.y) + (p2.x*p2.x + p2.y*p2.y) * (p3.y - p1.y) + (p3.x*p3.x + p3.y*p3.y) * (p1.y - p2.y)) / d;
+            let uy = ((p1.x*p1.x + p1.y*p1.y) * (p3.x - p2.x) + (p2.x*p2.x + p2.y*p2.y) * (p1.x - p3.x) + (p3.x*p3.x + p3.y*p3.y) * (p2.x - p1.x)) / d;
+            return { x: ux, y: uy, r: Math.hypot(p1.x - ux, p1.y - uy) };
+        }
+
+        // --- CẬP NHẬT ĐỘNG HÌNH HỌC (DYNAMICS CONSTRAINTS ENGINE) ---
+        function updateGeometry() {
+            for (let pass = 0; pass < 3; pass++) {
+                points.forEach(p => {
+                    if (p.type === 'midpoint') {
+                        let p1 = points[p.p1]; let p2 = points[p.p2];
+                        if (p1 && p2) { p.x = (p1.x + p2.x) / 2; p.y = (p1.y + p2.y) / 2; }
+                    }
+                    if (p.type === 'reflection_line') {
+                        let pOrig = points[p.pOrig]; let l = lines[p.targetLine];
+                        if (pOrig && l && l.A !== undefined) {
+                            let den = l.A*l.A + l.B*l.B;
+                            if (den > 0.001) {
+                                let d = (l.A * pOrig.x + l.B * pOrig.y + l.C) / den;
+                                p.x = pOrig.x - 2 * l.A * d; p.y = pOrig.y - 2 * l.B * d;
+                            }
+                        }
+                    }
+                });
+
+                lines.forEach(l => {
+                    if (['line', 'segment', 'ray', 'vector'].includes(l.type)) {
+                        let p1 = points[l.p1]; let p2 = points[l.p2];
+                        if (p1 && p2) { l.A = p2.y - p1.y; l.B = p1.x - p2.x; l.C = p2.x * p1.y - p1.x * p2.y; }
+                    } else if (l.type === 'perpendicular') {
+                        let p = points[l.p]; let target = lines[l.targetLine];
+                        if (p && target && target.A !== undefined) { l.A = -target.B; l.B = target.A; l.C = target.B * p.x - target.A * p.y; }
+                    } else if (l.type === 'parallel') {
+                        let p = points[l.p]; let target = lines[l.targetLine];
+                        if (p && target && target.A !== undefined) { l.A = target.A; l.B = target.B; l.C = -(target.A * p.x + target.B * p.y); }
+                    } else if (l.type === 'bisector') {
+                        let p1 = points[l.p1]; let p2 = points[l.p2];
+                        if (p1 && p2) { l.A = p2.x - p1.x; l.B = p2.y - p1.y; let mx = (p1.x + p2.x)/2; let my = (p1.y + p2.y)/2; l.C = -(l.A * mx + l.B * my); }
+                    } else if (l.type === 'bisector_3p') {
+                        let p1 = points[l.p1]; let p2 = points[l.p2]; let p3 = points[l.p3];
+                        if(p1 && p2 && p3) {
+                            let d1 = Math.hypot(p1.x - p2.x, p1.y - p2.y); let d3 = Math.hypot(p3.x - p2.x, p3.y - p2.y);
+                            if (d1 > 0 && d3 > 0) {
+                                let bx = (p1.x - p2.x)/d1 + (p3.x - p2.x)/d3; let by = (p1.y - p2.y)/d1 + (p3.y - p2.y)/d3;
+                                if (Math.hypot(bx, by) < 0.001) { bx = -(p1.y - p2.y)/d1; by = (p1.x - p2.x)/d1; }
+                                l.A = -by; l.B = bx; l.C = -(l.A * p2.x + l.B * p2.y);
+                            }
+                        }
+                    }
+                });
+
+                circles.forEach(c => {
+                    if (c.type === 'compass') {
+                        let p1 = points[c.p1]; let p2 = points[c.p2];
+                        if (p1 && p2) c.r = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                    } else if (c.type === 'circle_3p') {
+                        let p1 = points[c.p1]; let p2 = points[c.p2]; let p3 = points[c.p3];
+                        if (p1 && p2 && p3) {
+                            let cc = getCircumcircle(p1, p2, p3);
+                            if (cc) { 
+                                c.computedCenter = { x: cc.x, y: cc.y }; c.r = cc.r; 
+                                if (c.centerPt !== undefined && points[c.centerPt]) {
+                                    points[c.centerPt].x = cc.x; points[c.centerPt].y = cc.y;
+                                }
+                            } else { c.r = -1; }
+                        }
+                    }
+                });
+
+                points.forEach(p => {
+                    if (p.type === 'intersection') {
+                        let l1 = lines[p.l1]; let l2 = lines[p.l2];
+                        if (l1 && l2 && l1.A !== undefined && l2.A !== undefined) {
+                            let D = l1.A * l2.B - l2.A * l1.B;
+                            if (Math.abs(D) > 0.001) { p.x = (l1.B * l2.C - l2.B * l1.C) / D; p.y = (l2.A * l1.C - l1.A * l2.C) / D; }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Tối ưu hóa tìm kiếm bộ lọc điểm và đường thẳng (Bỏ qua đối tượng bị Ẩn trừ khi bật mode Ẩn/Hiện)
+        function findClosePoint(pos, maxDist = 12) {
+            let dAdj = maxDist / scale;
+            return points.findIndex(p => {
+                if (p.hidden && currentMode !== 'hide_show') return false;
+                return Math.hypot(p.x - pos.x, p.y - pos.y) < dAdj;
+            });
+        }
+
+        function findCloseLine(pos, maxDist = 10) {
+            let dAdj = maxDist / scale;
+            for (let i = 0; i < lines.length; i++) {
+                let l = lines[i]; if (l.A === undefined) continue;
+                if (l.hidden && currentMode !== 'hide_show') continue;
+                let dist = Math.abs(l.A * pos.x + l.B * pos.y + l.C) / Math.hypot(l.A, l.B);
+                if (dist < dAdj) return i;
+            }
+            return -1;
+        }
+
+        // --- CANVAS RENDER ENGINE CÓ ĐIỀU KIỆN ẨN / HIỆN (GHOST STYLING) ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateGeometry();
+
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            let minX = -offsetX / scale; let maxX = (canvas.width - offsetX) / scale;
+            let minY = -offsetY / scale; let maxY = (canvas.height - offsetY) / scale;
+
+            if (showGrid) {
+                ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1 / scale;
+                for (let x = Math.floor(minX/40)*40; x <= maxX; x += 40) { ctx.beginPath(); ctx.moveTo(x, minY); ctx.lineTo(x, maxY); ctx.stroke(); }
+                for (let y = Math.floor(minY/40)*40; y <= maxY; y += 40) { ctx.beginPath(); ctx.moveTo(minX, y); ctx.lineTo(maxX, y); ctx.stroke(); }
+            }
+
+            if (showAxes) {
+                ctx.strokeStyle = '#475569'; ctx.lineWidth = 2 / scale;
+                ctx.beginPath(); ctx.moveTo(minX, 0); ctx.lineTo(maxX, 0); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, minY); ctx.lineTo(0, maxY); ctx.stroke();
+            }
+
+            // Thiết lập phong cách mờ ảo (Ghost) cho các nét vẽ nếu đối tượng bị ẩn
+            function applyStyleContext(obj) {
+                ctx.restore(); ctx.save(); ctx.translate(offsetX, offsetY); ctx.scale(scale, scale); // Reset style
+                if (obj.hidden) {
+                    ctx.globalAlpha = 0.25; 
+                    ctx.setLineDash([6 / scale, 4 / scale]);
+                } else {
+                    ctx.globalAlpha = 1.0;
+                    ctx.setLineDash([]);
+                }
+            }
+
+            // Vẽ Đường thẳng
+            lines.forEach(l => {
+                if (l.hidden && currentMode !== 'hide_show') return;
+                if (l.A === undefined || ['segment', 'vector'].includes(l.type)) return;
+                applyStyleContext(l);
+                ctx.lineWidth = 2 / scale;
+                ctx.strokeStyle = l.type === 'line' ? '#f59e0b' : l.type === 'ray' ? '#a855f7' : '#06b6d4';
+
+                ctx.beginPath();
+                if (l.type === 'ray') {
+                    let p1 = points[l.p1]; let p2 = points[l.p2];
+                    if(p1 && p2) { ctx.moveTo(p1.x, p1.y); ctx.lineTo(p1.x + (p2.x - p1.x) * 300, p1.y + (p2.y - p1.y) * 300); }
+                } else {
+                    if (Math.abs(l.B) > 0.001) { ctx.moveTo(minX, (-l.A * minX - l.C) / l.B); ctx.lineTo(maxX, (-l.A * maxX - l.C) / l.B); }
+                    else { ctx.moveTo(-l.C / l.A, minY); ctx.lineTo(-l.C / l.A, maxY); }
+                }
+                ctx.stroke();
+            });
+
+            // Vẽ Đường tròn
+            circles.forEach(c => {
+                if (c.hidden && currentMode !== 'hide_show') return;
+                applyStyleContext(c);
+                ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2 / scale;
+                let cp = c.type === 'circle_3p' ? c.computedCenter : points[c.center];
+                if (cp) {
+                    let r = c.type === 'center_edge' ? Math.hypot(points[c.edge].x - cp.x, points[c.edge].y - cp.y) : c.r;
+                    if (r > 0) { ctx.beginPath(); ctx.arc(cp.x, cp.y, r, 0, 2 * Math.PI); ctx.stroke(); }
+                }
+            });
+
+            // Vẽ Đa giác
+            polygons.forEach(poly => {
+                if (poly.hidden && currentMode !== 'hide_show') return;
+                applyStyleContext(poly);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.12)'; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2 / scale;
+                ctx.beginPath();
+                poly.pIdxs.forEach((pIdx, i) => { let p = points[pIdx]; if (p) { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); } });
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+            });
+
+            // Vẽ Đoạn thẳng
+            lines.forEach(l => {
+                if (l.type !== 'segment' || (l.hidden && currentMode !== 'hide_show')) return;
+                applyStyleContext(l);
+                let p1 = points[l.p1]; let p2 = points[l.p2];
+                if(p1 && p2) { ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2.5 / scale; ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+            });
+
+            // Vẽ Vector
+            lines.forEach(l => {
+                if (l.type !== 'vector' || (l.hidden && currentMode !== 'hide_show')) return;
+                applyStyleContext(l);
+                let p1 = points[l.p1]; let p2 = points[l.p2];
+                if(p1 && p2) {
+                    ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5 / scale; ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    let ang = Math.atan2(p2.y - p1.y, p2.x - p1.x); let sz = 12 / scale;
+                    ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.moveTo(p2.x, p2.y);
+                    ctx.lineTo(p2.x - sz * Math.cos(ang - Math.PI/6), p2.y - sz * Math.sin(ang - Math.PI/6));
+                    ctx.lineTo(p2.x - sz * Math.cos(ang + Math.PI/6), p2.y - sz * Math.sin(ang + Math.PI/6));
+                    ctx.closePath(); ctx.fill();
+                }
+            });
+
+            // Vẽ các hệ thống cung / quạt tròn
+            arcs.forEach(arc => {
+                if (arc.hidden && currentMode !== 'hide_show') return;
+                applyStyleContext(arc);
+                ctx.lineWidth = 2.5 / scale;
+                if(arc.type.startsWith('sector')) { ctx.fillStyle = 'rgba(234, 179, 8, 0.16)'; ctx.strokeStyle = '#eab308'; }
+                else { ctx.strokeStyle = '#a855f7'; ctx.fillStyle = 'none'; }
+
+                if (arc.type === 'semicircle') {
+                    let p1 = points[arc.p1]; let p2 = points[arc.p2];
+                    if(p1 && p2) {
+                        let mx = (p1.x + p2.x)/2; let my = (p1.y + p2.y)/2; let r = Math.hypot(p2.x - p1.x, p2.y - p1.y)/2;
+                        let startAng = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                        ctx.beginPath(); ctx.arc(mx, my, r, startAng, startAng + Math.PI, false); ctx.stroke();
+                    }
+                }
+                else if (arc.type === 'arc_center_2p' || arc.type === 'sector_center_2p') {
+                    let cp = points[arc.center]; let p1 = points[arc.p1]; let p2 = points[arc.p2];
+                    if(cp && p1 && p2) {
+                        let r = Math.hypot(p1.x - cp.x, p1.y - cp.y);
+                        let a1 = Math.atan2(p1.y - cp.y, p1.x - cp.x); let a2 = Math.atan2(p2.y - cp.y, p2.x - cp.x);
+                        ctx.beginPath(); if(arc.type.startsWith('sector')) ctx.moveTo(cp.x, cp.y);
+                        ctx.arc(cp.x, cp.y, r, a1, a2, false); if(arc.type.startsWith('sector')) { ctx.closePath(); ctx.fill(); }
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Ghi văn bản nhãn tự do
+            ctx.setLineDash([]); ctx.globalAlpha = 1.0;
+            ctx.fillStyle = '#cbd5e1'; ctx.font = (13/scale)+"px sans-serif";
+            texts.forEach(t => ctx.fillText(t.content, t.x, t.y));
+
+            // Đắp nhãn số đo khoảng cách
+            ctx.fillStyle = '#f8fafc'; ctx.font = "bold " + (11 / scale) + "px sans-serif";
+            measurements.forEach(m => {
+                let p1 = points[m.p1]; let p2 = points[m.p2];
+                if (p1 && p2 && !p1.hidden && !p2.hidden) { ctx.fillText(`${Math.hypot(p2.x-p1.x, p2.y-p1.y).toFixed(1)} px`, (p1.x+p2.x)/2 + 8/scale, (p1.y+p2.y)/2 - 8/scale); }
+            });
+
+            if (tempPolyPoints.length > 0) {
+                ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([4/scale, 4/scale]); ctx.lineWidth = 1/scale;
+                ctx.beginPath(); ctx.moveTo(points[tempPolyPoints[tempPolyPoints.length-1]].x, points[tempPolyPoints[tempPolyPoints.length-1]].y);
+                ctx.lineTo(mousePos.x, mousePos.y); ctx.stroke(); ctx.setLineDash([]);
+            }
+
+            // RENDER CÁC ĐIỂM (NODES VẼ SAU CÙNG LÊN TRÊN)
+            points.forEach((p, idx) => {
+                if (p.hidden && currentMode !== 'hide_show') return;
+                
+                ctx.restore(); ctx.save(); ctx.translate(offsetX, offsetY); ctx.scale(scale, scale);
+                if (p.hidden) ctx.globalAlpha = 0.25;
+
+                if(p.type === 'free') ctx.fillStyle = '#3b82f6';
+                else if(p.type === 'midpoint' || p.type === 'computed_center') ctx.fillStyle = '#eab308';
+                else ctx.fillStyle = '#ef4444';
+                if (selectedPoint === p) ctx.fillStyle = '#f43f5e';
+
+                ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, 2 * Math.PI); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5 / scale; ctx.stroke();
+                
+                let defaultName = String.fromCharCode(65 + (idx % 26)) + (idx >= 26 ? Math.floor(idx/26) : '');
+                let finalName = p.label ? p.label : defaultName;
+                
+                ctx.fillStyle = '#f8fafc'; ctx.font = "bold " + (12 / scale) + "px sans-serif";
+                ctx.fillText(finalName, p.x + 10/scale, p.y - 10/scale);
+            });
+
+            ctx.restore();
+        }
+
+        function triggerRename(pIdx) {
+            if (pIdx === -1) return;
+            let p = points[pIdx];
+            let defaultName = String.fromCharCode(65 + (pIdx % 26)) + (pIdx >= 26 ? Math.floor(pIdx/26) : '');
+            let newName = prompt(`Nhập tên mới cho điểm này (Hiện tại: ${p.label || defaultName}):`, p.label || defaultName);
+            if (newName !== null) {
+                saveState(); p.label = newName.trim(); draw();
+            }
+        }
+
+        canvas.addEventListener('dblclick', function(e) {
+            if (currentMode === 'move') {
+                let rect = canvas.getBoundingClientRect();
+                let wx = (e.clientX - rect.left - offsetX) / scale;
+                let wy = (e.clientY - rect.top - offsetY) / scale;
+                let pIdx = findClosePoint({ x: wx, y: wy });
+                if (pIdx !== -1) triggerRename(pIdx);
+            }
+        });
+
+        // --- BỘ XỬ LÝ SỰ KIỆN KHÔNG GIAN CHUỘT MOUSE DOWN ---
+        canvas.addEventListener('mousedown', function(e) {
+            let rect = canvas.getBoundingClientRect();
+            let wx = (e.clientX - rect.left - offsetX) / scale;
+            let wy = (e.clientY - rect.top - offsetY) / scale;
+            let pos = { x: wx, y: wy };
+
+            // Cho phép tìm kiếm đối tượng ẩn khi đang ở chế độ hide_show
+            let pIdx = findClosePoint(pos);
+            let lIdx = findCloseLine(pos);
+
+            let cIdx = -1;
+            for (let i = 0; i < circles.length; i++) {
+                let c = circles[i];
+                if (c.hidden && currentMode !== 'hide_show') continue;
+                let cp = c.type === 'circle_3p' ? c.computedCenter : points[c.center];
+                if (!cp) continue;
+                let r = c.type === 'center_edge' ? Math.hypot(points[c.edge].x - cp.x, points[c.edge].y - cp.y) : c.r;
+                if (Math.abs(Math.hypot(pos.x - cp.x, pos.y - cp.y) - r) < 12/scale) { cIdx = i; break; }
+            }
+
+            // XỬ LÝ CHẾ ĐỘ ẨN / HIỆN ĐỐI TƯỢNG (GHOST INTERACTION)
+            if (currentMode === 'hide_show') {
+                if (pIdx !== -1) { saveState(); points[pIdx].hidden = !points[pIdx].hidden; draw(); return; }
+                if (lIdx !== -1) { saveState(); lines[lIdx].hidden = !lines[lIdx].hidden; draw(); return; }
+                if (cIdx !== -1) { saveState(); circles[cIdx].hidden = !circles[cIdx].hidden; draw(); return; }
+                return;
+            }
+
+            if (currentMode === 'move') {
+                if (pIdx !== -1) { 
+                    if (points[pIdx].type === 'free') {
+                        selectedPoint = points[pIdx];
+                        startPointPos = { x: selectedPoint.x, y: selectedPoint.y };
+                        preMoveSnapshot = createSnapshot();
+                    } 
+                }
+                else { isPanning = true; panStart.x = e.clientX; panStart.y = e.clientY; }
+            }
+            else if (currentMode === 'rename_point') {
+                if (pIdx !== -1) triggerRename(pIdx);
+            }
+            else if (currentMode === 'point' && pIdx === -1) { 
+                saveState(); points.push({ type: 'free', x: pos.x, y: pos.y }); 
+            }
+            else if (['segment', 'line', 'ray', 'vector'].includes(currentMode) && pIdx !== -1) {
+                if (activePoint === null) activePoint = pIdx;
+                else if (activePoint !== pIdx) {
+                    saveState();
+                    if (currentMode === 'segment') lines.push({ type: 'segment', p1: activePoint, p2: pIdx });
+                    if (currentMode === 'line') lines.push({ type: 'line', p1: activePoint, p2: pIdx });
+                    if (currentMode === 'ray') lines.push({ type: 'ray', p1: activePoint, p2: pIdx });
+                    if (currentMode === 'vector') lines.push({ type: 'vector', p1: activePoint, p2: pIdx });
+                    activePoint = null;
+                }
+            }
+            else if (currentMode === 'circle' && pIdx !== -1) {
+                if (activePoint === null) activePoint = pIdx;
+                else if (activePoint !== pIdx) {
+                    // Nếu tâm chưa được đặt nhãn, tự động đặt tên là O1, O2...
+                    if (!points[activePoint].label) {
+                        points[activePoint].label = getNextCenterLabel();
+                    }
+                    saveState();
+                    circles.push({ type: 'center_edge', center: activePoint, edge: pIdx });
+                    activePoint = null;
+                }
+            }
+            else if (['circle_3p', 'arc_center_2p', 'bisector_3p'].includes(currentMode) && pIdx !== -1) {
+                tempPolyPoints.push(pIdx);
+                if (tempPolyPoints.length === 3) {
+                    let m = currentMode;
+                    if (m === 'circle_3p') {
+                        let cc = getCircumcircle(points[tempPolyPoints[0]], points[tempPolyPoints[1]], points[tempPolyPoints[2]]);
+                        let lbl = getNextCenterLabel();
+                        
+                        // Tự động tạo thêm một điểm Tâm thực thể
+                        points.push({ type: 'computed_center', x: cc?cc.x:0, y: cc?cc.y:0, label: lbl });
+                        let cPtIdx = points.length - 1;
+                        
+                        saveState();
+                        circles.push({ type: 'circle_3p', p1: tempPolyPoints[0], p2: tempPolyPoints[1], p3: tempPolyPoints[2], centerPt: cPtIdx });
+                    }
+                    if (m === 'bisector_3p') {
+                        saveState(); lines.push({ type: 'bisector_3p', p1: tempPolyPoints[0], p2: tempPolyPoints[1], p3: tempPolyPoints[2] });
+                    }
+                    tempPolyPoints = [];
+                }
+            }
+            else if (currentMode === 'distance' && pIdx !== -1) {
+                if (activePoint === null) activePoint = pIdx;
+                else if (activePoint !== pIdx) { saveState(); measurements.push({ type: 'distance', p1: activePoint, p2: pIdx }); activePoint = null; }
+            }
+            else if (currentMode === 'delete' && pIdx !== -1) {
+                saveState();
+                lines = lines.filter(l => l.p1 !== pIdx && l.p2 !== pIdx);
+                circles = circles.filter(c => c.center !== pIdx && c.edge !== pIdx && c.p1 !== pIdx && c.p2 !== pIdx && c.p3 !== pIdx && c.centerPt !== pIdx);
+                points.splice(pIdx, 1);
+                
+                const reindex = (i) => i > pIdx ? i - 1 : i;
+                lines.forEach(l => { if(l.p1!==undefined) l.p1=reindex(l.p1); if(l.p2!==undefined) l.p2=reindex(l.p2); });
+                circles.forEach(c => { 
+                    if(c.center!==undefined) c.center = reindex(c.center); if(c.edge!==undefined) c.edge=reindex(c.edge); 
+                    if(c.p1!==undefined) c.p1=reindex(c.p1); if(c.p2!==undefined) c.p2=reindex(c.p2); if(c.p3!==undefined) c.p3=reindex(c.p3); 
+                    if(c.centerPt!==undefined) c.centerPt = reindex(c.centerPt);
+                });
+                measurements.forEach(m => { m.p1 = reindex(m.p1); m.p2 = reindex(m.p2); });
+            }
+            draw();
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (isPanning) {
+                offsetX += e.clientX - panStart.x; offsetY += e.clientY - panStart.y;
+                panStart.x = e.clientX; panStart.y = e.clientY; draw(); return;
+            }
+            let rect = canvas.getBoundingClientRect();
+            mousePos = { x: (e.clientX - rect.left - offsetX) / scale, y: (e.clientY - rect.top - offsetY) / scale };
+
+            if (currentMode === 'move' && selectedPoint) {
+                selectedPoint.x = mousePos.x; selectedPoint.y = mousePos.y; draw();
+            } else if (tempPolyPoints.length > 0 || activePoint !== null) { draw(); }
+        });
+
+        window.addEventListener('mouseup', function() { 
+            if (selectedPoint && preMoveSnapshot) {
+                if (Math.hypot(selectedPoint.x - startPointPos.x, selectedPoint.y - startPointPos.y) > 0.01) {
+                    undoStack.push(preMoveSnapshot);
+                    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+                    redoStack = []; updateUndoRedoButtons();
+                    autoSaveProgress(); // Tự động lưu tọa độ mới sau khi kết thúc kéo thả điểm
+                }
+            }
+            selectedPoint = null; preMoveSnapshot = null; isPanning = false; 
+        });
+
+        // Khởi động hệ thống file người dùng khi nạp trang
+        window.addEventListener('load', function() {
+            initFileSystem();
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
