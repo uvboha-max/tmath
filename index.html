@@ -1231,5 +1231,238 @@
             renderQuestionsFeed("");
         };
     </script>
+<!-- =========================
+     CASIO FLOATING WIDGET
+========================= -->
+
+<button id="casioToggleBtn">🧮</button>
+
+<div id="casioContainer">
+    <div id="casioHeader">
+        <span>fx-TMATH 991</span>
+        <button id="casioHideBtn">✕</button>
+    </div>
+
+    <div id="casioResizeHandle"></div>
+
+    <iframe
+        id="casioFrame"
+        src="casio.html">
+    </iframe>
+</div>
+
+<style>
+#casioToggleBtn{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:999999;
+
+    width:60px;
+    height:60px;
+
+    border:none;
+    border-radius:50%;
+    font-size:28px;
+    cursor:pointer;
+
+    box-shadow:0 4px 15px rgba(0,0,0,.25);
+}
+
+#casioContainer{
+    position:fixed;
+
+    right:20px;
+    top:100px;
+
+    width:420px;
+    height:780px;
+
+    background:white;
+    border-radius:12px;
+    overflow:hidden;
+
+    z-index:999998;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+
+    resize:none;
+}
+
+#casioHeader{
+    height:40px;
+
+    background:#2563eb;
+    color:white;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 12px;
+
+    cursor:move;
+    user-select:none;
+}
+
+#casioHideBtn{
+    border:none;
+    background:none;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+#casioFrame{
+    width:100%;
+    height:calc(100% - 40px);
+
+    border:none;
+}
+
+#casioResizeHandle{
+    position:absolute;
+
+    width:20px;
+    height:20px;
+
+    right:0;
+    bottom:0;
+
+    cursor:nwse-resize;
+
+    z-index:999999;
+}
+</style>
+
+<script>
+const casioContainer =
+document.getElementById("casioContainer");
+
+const casioToggleBtn =
+document.getElementById("casioToggleBtn");
+
+const casioHideBtn =
+document.getElementById("casioHideBtn");
+
+const casioHeader =
+document.getElementById("casioHeader");
+
+const resizeHandle =
+document.getElementById("casioResizeHandle");
+
+/* =====================
+   ẨN / HIỆN
+===================== */
+
+casioToggleBtn.onclick = () => {
+
+    if(casioContainer.style.display === "none"){
+        casioContainer.style.display = "block";
+    }else{
+        casioContainer.style.display = "none";
+    }
+};
+
+casioHideBtn.onclick = () => {
+    casioContainer.style.display = "none";
+};
+
+/* =====================
+   KÉO THẢ
+===================== */
+
+let dragging = false;
+
+let offsetX = 0;
+let offsetY = 0;
+
+casioHeader.addEventListener(
+"mousedown",
+(e)=>{
+
+    dragging = true;
+
+    offsetX =
+        e.clientX -
+        casioContainer.offsetLeft;
+
+    offsetY =
+        e.clientY -
+        casioContainer.offsetTop;
+});
+
+document.addEventListener(
+"mousemove",
+(e)=>{
+
+    if(!dragging) return;
+
+    casioContainer.style.left =
+        (e.clientX - offsetX) + "px";
+
+    casioContainer.style.top =
+        (e.clientY - offsetY) + "px";
+
+    casioContainer.style.right =
+        "auto";
+});
+
+document.addEventListener(
+"mouseup",
+()=>{
+    dragging = false;
+});
+
+/* =====================
+   RESIZE GIỮ TỈ LỆ
+===================== */
+
+let resizing = false;
+
+const aspectRatio =
+420 / 780;
+
+resizeHandle.addEventListener(
+"mousedown",
+()=>{
+    resizing = true;
+});
+
+document.addEventListener(
+"mousemove",
+(e)=>{
+
+    if(!resizing) return;
+
+    const rect =
+        casioContainer.getBoundingClientRect();
+
+    let newWidth =
+        e.clientX - rect.left;
+
+    if(newWidth < 250)
+        newWidth = 250;
+
+    let newHeight =
+        newWidth / aspectRatio;
+
+    casioContainer.style.width =
+        newWidth + "px";
+
+    casioContainer.style.height =
+        newHeight + "px";
+});
+
+document.addEventListener(
+"mouseup",
+()=>{
+    resizing = false;
+});
+</script>
+
+<!-- =========================
+     END CASIO WIDGET
+========================= -->
 </body>
 </html>
