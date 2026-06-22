@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fx-TMATH 991 — Máy tính khoa học</title>
+<style>
+  :root{
+    --case-dark:#2b2d30;
+    --case-darker:#1d1f21;
+    --case-edge:#3c3f43;
+    --lcd-bg:#aebd9a;
+    --lcd-bg2:#9cae87;
+    --lcd-ink:#23291f;
+    --lcd-ink-dim:#5b6650;
+    --key-dark:#34373b;
+    --key-dark-top:#42454a;
+    --key-light:#e8e9ea;
+    --key-light-top:#fbfbfb;
+    --key-navy:#1f3a5f;
+    --key-navy-top:#2c537f;
+    --key-orange:#c05a1f;
+    --key-orange-top:#dd7536;
+    --key-red:#7a1f1f;
+    --key-red-top:#9c2c2c;
+    --key-green-arrow:#2e2f31;
+    --solar-blue:#1a3a5c;
+    --sans: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    --mono: 'Consolas', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 30% 0%, #2a2d33 0%, #15161a 60%);
+    font-family:var(--sans);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    color:#e6edf3;
+    user-select:none;
+  }
+
+  /* ============================================================
+     OUTER CASE
+     ============================================================ */
+  .calc-shell{
+    width:380px;
+    background:linear-gradient(160deg, #34373c 0%, #232529 55%, #1a1c1f 100%);
+    border-radius:18px 18px 26px 26px;
+    padding:16px 14px 20px;
+    box-shadow:
+      0 30px 60px rgba(0,0,0,.55),
+      0 2px 0 rgba(255,255,255,.04) inset,
+      0 -2px 10px rgba(0,0,0,.5) inset;
+    position:relative;
+    border:1px solid #15161a;
+  }
+  .brand-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:2px 56px 8px 6px;
+  }
+  .brand-row .brand{
+    font-family:var(--sans);
+    font-weight:800;
+    font-style:italic;
+    font-size:15px;
+    color:#cfd3d8;
+    letter-spacing:.5px;
+  }
+  .brand-row .model{
+    font-size:10.5px;
+    color:#8a8f96;
+    font-weight:600;
+    letter-spacing:.5px;
+  }
+  .solar-strip{
+    position:absolute;
+    top:14px; right:14px;
+    width:46px; height:14px;
+    background:repeating-linear-gradient(100deg, var(--solar-blue) 0 4px, #142840 4px 5px);
+    border-radius:2px;
+    box-shadow:0 0 0 1px #0c1c2c;
+  }
+
+  /* ============================================================
+     LCD SCREEN
+     ============================================================ */
+  .lcd-bezel{
+    background:#0e0f10;
+    border-radius:8px;
+    padding:9px 9px 11px;
+    margin:2px 4px 14px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.03);
+  }
+  .lcd-screen{
+    background:linear-gradient(175deg, var(--lcd-bg) 0%, var(--lcd-bg2) 100%);
+    border-radius:3px;
+    padding:8px 10px;
+    height:128px;
+    font-family:var(--mono);
+    color:var(--lcd-ink);
+    position:relative;
+    overflow:hidden;
+    box-shadow: inset 0 0 14px rgba(0,0,0,.22);
+  }
+  .lcd-statusbar{
+    display:flex;
+    gap:8px;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.5px;
+    color:var(--lcd-ink-dim);
+    height:12px;
+    margin-bottom:2px;
+  }
+  .lcd-statusbar span{opacity:.35;}
+  .lcd-statusbar span.on{opacity:1; color:var(--lcd-ink);}
+
+  .lcd-body{
+    position:absolute;
+    top:22px; left:10px; right:10px; bottom:8px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* Menu grid (icon hall like real Casio MENU key) */
+  .lcd-menu-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:3px 6px;
+    flex:1;
+    align-content:start;
+  }
+  .lcd-menu-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:1px;
+    padding:2px 0;
+    border-radius:3px;
+  }
+  .lcd-menu-item .ic{
+    width:22px; height:18px;
+    border:1.4px solid var(--lcd-ink);
+    border-radius:2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:9px;
+    font-weight:800;
+  }
+  .lcd-menu-item .lb{
+    font-size:6.3px;
+    text-align:center;
+    line-height:1.05;
+    font-weight:600;
+    max-width:38px;
+  }
+  .lcd-menu-item.sel .ic{
+    background:var(--lcd-ink);
+    color:var(--lcd-bg);
+  }
+  .lcd-menu-item.sel .lb{
+    text-decoration:underline;
+  }
+
+  /* App view: title + field list + result */
+  .lcd-app-title{
+    font-size:10.5px;
+    font-weight:800;
+    border-bottom:1.4px solid var(--lcd-ink);
+    padding-bottom:2px;
+    margin-bottom:3px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .lcd-app-title .back-hint{font-size:8px; font-weight:600; opacity:.7;}
+
+  .lcd-fields{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    font-size:11.5px;
+    overflow:hidden;
+  }
+  .lcd-field-row{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    white-space:nowrap;
+  }
+  .lcd-field-row .flabel{font-weight:700; flex-shrink:0;}
+  .lcd-field-row .fval{
+    flex:1;
+    border-bottom:1px dotted var(--lcd-ink-dim);
+    padding:0 2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .lcd-field-row.focused .fval{
+    background:var(--lcd-ink);
+    color:var(--lcd-bg);
+    border-radius:1px;
+  }
+  .lcd-field-row.focused .fval::after{
+    content:'';
+  }
+
+  .lcd-result{
+    font-size:12px;
+    font-weight:700;
+    white-space:pre-wrap;
+    word-break:break-word;
+    border-top:1.4px solid var(--lcd-ink);
+    margin-top:3px;
+    padding-top:3px;
+    max-height:54px;
+    overflow-y:auto;
+  }
+  .lcd-result.err{font-weight:600;}
+  .lcd-result::-webkit-scrollbar{width:3px;}
+  .lcd-result::-webkit-scrollbar-thumb{background:var(--lcd-ink-dim);}
+
+  .lcd-hint{
+    font-size:8.6px;
+    color:var(--lcd-ink-dim);
+    margin-top:auto;
+    padding-top:2px;
+  }
+
+  .blink-cursor{
+    display:inline-block;
+    width:5px; height:11px;
+    background:var(--lcd-ink);
+    margin-left:1px;
+    vertical-align:-1px;
+    animation: blink 1s step-start infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* ============================================================
+     KEYPAD
+     ============================================================ */
+  .keypad-wrap{
+    padding:0 2px;
+  }
+  .key-row{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:6px;
+    margin-bottom:6px;
+  }
+  .key{
+    position:relative;
+    height:30px;
+    border-radius:6px;
+    border:none;
+    font-family:var(--sans);
+    font-size:11.5px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#1b1c1e;
+    background:linear-gradient(180deg, var(--key-light-top), var(--key-light));
+    box-shadow:
+      0 2px 0 #b9bbbd,
+      0 3px 3px rgba(0,0,0,.35);
+    transition:transform .04s, box-shadow .04s;
+  }
+  .key:active{
+    transform:translateY(2px);
+    box-shadow:0 0 0 #b9bbbd, 0 1px 1px rgba(0,0,0,.35);
+  }
+  .key.dark{
+    color:#eceef0;
+    background:linear-gradient(180deg, var(--key-dark-top), var(--key-dark));
+    box-shadow:0 2px 0 #161719, 0 3px 3px rgba(0,0,0,.45);
+  }
+  .key.dark:active{ box-shadow:0 0 0 #161719, 0 1px 1px rgba(0,0,0,.45); }
+  .key.navy{
+    color:#fff;
+    background:linear-gradient(180deg, var(--key-navy-top), var(--key-navy));
+    box-shadow:0 2px 0 #0f2138, 0 3px 3px rgba(0,0,0,.45);
+  }
+  .key.navy:active{ box-shadow:0 0 0 #0f2138, 0 1px 1px rgba(0,0,0,.45); }
+  .key.orange{
+    color:#fff;
+    background:linear-gradient(180deg, var(--key-orange-top), var(--key-orange));
+    box-shadow:0 2px 0 #7c3a10, 0 3px 3px rgba(0,0,0,.45);
+  }
+  .key.orange:active{ box-shadow:0 0 0 #7c3a10, 0 1px 1px rgba(0,0,0,.45); }
+  .key.red{
+    color:#fff;
+    background:linear-gradient(180deg, var(--key-red-top), var(--key-red));
+    box-shadow:0 2px 0 #4f1212, 0 3px 3px rgba(0,0,0,.45);
+  }
+  .key.red:active{ box-shadow:0 0 0 #4f1212, 0 1px 1px rgba(0,0,0,.45); }
+  .key .sub{
+    position:absolute;
+    top:1px; left:4px;
+    font-size:7px;
+    font-weight:700;
+    color:var(--key-orange-top);
+  }
+  .key.small-label{font-size:9.5px;}
+
+  /* Arrow cluster (4-direction + center EXE) */
+  .arrow-cluster{
+    width:92px; height:92px;
+    margin:4px auto 10px;
+    position:relative;
+    background:radial-gradient(circle at 35% 30%, #3a3d42, #17181a 75%);
+    border-radius:50%;
+    box-shadow:
+      0 4px 10px rgba(0,0,0,.5),
+      inset 0 1px 2px rgba(255,255,255,.06);
+  }
+  .arrow-btn{
+    position:absolute;
+    width:30px; height:30px;
+    border:none;
+    background:linear-gradient(180deg, #4a4e54, #34373c);
+    color:#d8dadd;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    box-shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  .arrow-btn:active{ background:linear-gradient(180deg, #2c2e32, #24262a); }
+  .arrow-up{ top:2px; left:31px; width:30px; height:28px; border-radius:14px 14px 3px 3px;}
+  .arrow-down{ bottom:2px; left:31px; width:30px; height:28px; border-radius:3px 3px 14px 14px;}
+  .arrow-left{ left:2px; top:31px; width:28px; height:30px; border-radius:14px 3px 3px 14px;}
+  .arrow-right{ right:2px; top:31px; width:28px; height:30px; border-radius:3px 14px 14px 3px;}
+  .arrow-center{
+    position:absolute;
+    top:31px; left:31px;
+    width:30px; height:30px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #d99a4f, #c05a1f 75%);
+    color:#fff;
+    font-size:8px;
+    font-weight:800;
+    border:none;
+    cursor:pointer;
+    box-shadow:0 2px 4px rgba(0,0,0,.4);
+  }
+  .arrow-center:active{ filter:brightness(.88); }
+
+  .footer-credit{
+    text-align:center;
+    font-size:9px;
+    color:#6b6f75;
+    margin-top:8px;
+    letter-spacing:.3px;
+  }
+
+  @media (max-width:420px){
+    .calc-shell{ width:96vw; max-width:380px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="calc-shell">
+  <div class="solar-strip"></div>
+  <div class="brand-row">
+    <div class="brand">fx-TMATH</div>
+    <div class="model">991 VN PLUS</div>
+  </div>
+
+  <div class="lcd-bezel">
+    <div class="lcd-screen">
+      <div class="lcd-statusbar" id="lcdStatus">
+        <span id="stMode">DEG</span>
+        <span id="stShift">SHIFT</span>
+        <span id="stAlpha">ALPHA</span>
+        <span id="stErr">ERR</span>
+      </div>
+      <div class="lcd-body" id="lcdBody">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div class="keypad-wrap" id="keypadWrap">
+
+    <!-- Row: SHIFT / ALPHA / MENU / ON -->
+    <div class="key-row">
+      <button class="key orange" data-key="SHIFT">SHIFT</button>
+      <button class="key red" data-key="ALPHA">ALPHA</button>
+      <button class="key dark small-label" data-key="MENU">MENU</button>
+      <button class="key dark small-label" data-key="MODE">MODE</button>
+      <button class="key dark small-label" data-key="ON">ON</button>
+    </div>
+
+    <!-- Row: trig / inverse trig -->
+    <div class="key-row">
+      <button class="key dark" data-key="sin">sin</button>
+      <button class="key dark" data-key="cos">cos</button>
+      <button class="key dark" data-key="tan">tan</button>
+      <button class="key dark small-label" data-key="asin">sin⁻¹</button>
+      <button class="key dark small-label" data-key="acos">cos⁻¹</button>
+    </div>
+    <div class="key-row">
+      <button class="key dark small-label" data-key="atan">tan⁻¹</button>
+      <button class="key dark" data-key="log">log</button>
+      <button class="key dark" data-key="ln">ln</button>
+      <button class="key dark small-label" data-key="sqrt">√</button>
+      <button class="key dark small-label" data-key="nroot">ⁿ√</button>
+    </div>
+    <div class="key-row">
+      <button class="key dark small-label" data-key="pow">x^y</button>
+      <button class="key dark small-label" data-key="sq">x²</button>
+      <button class="key dark small-label" data-key="fact">x!</button>
+      <button class="key dark small-label" data-key="abs">|x|</button>
+      <button class="key dark small-label" data-key="percent">%</button>
+    </div>
+
+    <!-- Row: nav helpers + arrow cluster -->
+    <div class="key-row" style="grid-template-columns:1fr 1fr 1fr;">
+      <button class="key dark small-label" data-key="DEL">DEL</button>
+      <button class="key red small-label" data-key="AC">AC</button>
+      <button class="key dark small-label" data-key="EXIT">EXIT</button>
+    </div>
+
+    <div class="arrow-cluster">
+      <button class="arrow-btn arrow-up" data-key="UP">▲</button>
+      <button class="arrow-btn arrow-down" data-key="DOWN">▼</button>
+      <button class="arrow-btn arrow-left" data-key="LEFT">◄</button>
+      <button class="arrow-btn arrow-right" data-key="RIGHT">►</button>
+      <button class="arrow-center" data-key="EXE">EXE</button>
+    </div>
+
+    <!-- Row: fraction / ANS -->
+    <div class="key-row">
+      <button class="key dark small-label" data-key="frac">a b/c</button>
+      <button class="key orange small-label" data-key="ANS">ANS</button>
+      <button class="key dark small-label" data-key="comma2">,</button>
+    </div>
+
+    <!-- Row: parens / pi / e -->
+    <div class="key-row">
+      <button class="key dark" data-key="lparen">(</button>
+      <button class="key dark" data-key="rparen"><span class="sub">X</span>)</button>
+      <button class="key dark" data-key="pi">π</button>
+      <button class="key dark" data-key="euler">e</button>
+      <button class="key dark small-label" data-key="comma"><span class="sub">i</span>,</button>
+    </div>
+
+    <!-- Numeric pad -->
+    <div class="key-row">
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key dark" data-key="DEL2">⌫</button>
+      <button class="key navy small-label" data-key="div">÷</button>
+    </div>
+    <div class="key-row">
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key navy small-label" data-key="mul">×</button>
+      <button class="key navy small-label" data-key="sub">−</button>
+    </div>
+    <div class="key-row">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key navy small-label" data-key="add">+</button>
+      <button class="key navy small-label" data-key="neg">(−)</button>
+    </div>
+    <div class="key-row">
+      <button class="key" data-key="0" style="grid-column:span 2;">0</button>
+      <button class="key" data-key="dot">.</button>
+      <button class="key dark small-label" data-key="EXP10">×10ˣ</button>
+      <button class="key orange" data-key="EXE2"><span class="sub" style="color:#fff;">SH</span>=</button>
+    </div>
+
+  </div>
+
+  <div class="footer-credit">ARROW = di chuyển/chọn · ALPHA+)=x · AC=xóa</div>
+</div>
+
+<script>
+/* =========================================================================
+   PHẦN A: PARSER BIỂU THỨC TOÁN HỌC (tái sử dụng từ bản web)
+   ========================================================================= */
+let ANGLE_UNIT = 'DEG'; // DEG | RAD | GRA
+let ANS = 0; // lưu kết quả phép tính gần nhất (giống Casio thật)
+
+function toRad(x){
+  if(ANGLE_UNIT==='DEG') return x*Math.PI/180;
+  if(ANGLE_UNIT==='GRA') return x*Math.PI/200;
+  return x;
+}
+function fromRad(r){
+  if(ANGLE_UNIT==='DEG') return r*180/Math.PI;
+  if(ANGLE_UNIT==='GRA') return r*200/Math.PI;
+  return r;
+}
+function unitSuffix(){ return ANGLE_UNIT==='DEG' ? '°' : (ANGLE_UNIT==='GRA' ? 'ᵍ' : 'rad'); }
+
+class ExprParser {
+  constructor(text){ this.text=text; this.pos=0; this.len=text.length; }
+  peek(){ return this.text[this.pos]; }
+  error(msg){ throw new Error(msg||'Lỗi cú pháp'); }
+  parse(){
+    this.skipWs();
+    const v = this.parseExpr();
+    this.skipWs();
+    if(this.pos<this.len) this.error('Dư ký tự: '+this.text.slice(this.pos));
+    return v;
+  }
+  skipWs(){ while(this.pos<this.len && /\s/.test(this.text[this.pos])) this.pos++; }
+  parseExpr(){
+    let v=this.parseTerm(); this.skipWs();
+    while(this.pos<this.len && (this.peek()==='+'||this.peek()==='-')){
+      const op=this.peek(); this.pos++;
+      const rhs=this.parseTerm();
+      v = op==='+' ? v+rhs : v-rhs;
+      this.skipWs();
+    }
+    return v;
+  }
+  parseTerm(){
+    let v=this.parsePercent(); this.skipWs();
+    while(this.pos<this.len){
+      const c=this.peek();
+      if(c==='*'||c==='/'||c==='×'||c==='÷'){
+        const op=c; this.pos++;
+        const rhs=this.parsePercent();
+        if(op==='*'||op==='×') v=v*rhs;
+        else{ if(rhs===0) this.error('Chia cho 0'); v=v/rhs; }
+        this.skipWs();
+      } else if(c==='(' || c==='|' || c==='√' || c==='∛' || c==='π' || /[0-9.]/.test(c) || /[a-zA-Z]/.test(c)){
+        // implicit multiplication: "2x", "3(x+1)", "2π", "5sin(x)" etc.
+        const rhs=this.parsePercent();
+        v=v*rhs;
+        this.skipWs();
+      } else break;
+    }
+    return v;
+  }
+  parsePercent(){
+    let v=this.parseUnary(); this.skipWs();
+    while(this.pos<this.len && this.peek()==='%'){ this.pos++; v=v/100; this.skipWs(); }
+    return v;
+  }
+  parseUnary(){
+    this.skipWs();
+    if(this.peek()==='-'){ this.pos++; return -this.parseUnary(); }
+    if(this.peek()==='+'){ this.pos++; return this.parseUnary(); }
+    return this.parsePower();
+  }
+  parsePower(){
+    let v=this.parsePostfix(); this.skipWs();
+    if(this.pos<this.len && this.peek()==='^'){
+      this.pos++;
+      const rhs=this.parseUnary();
+      v=Math.pow(v,rhs);
+    }
+    return v;
+  }
+  parsePostfix(){
+    let v=this.parseAtom(); this.skipWs();
+    while(this.pos<this.len && this.peek()==='!'){ this.pos++; v=factorial(v); this.skipWs(); }
+    return v;
+  }
+  parseAtom(){
+    this.skipWs();
+    if(this.pos>=this.len) this.error('Biểu thức chưa hoàn chỉnh');
+    const c=this.peek();
+    if(c==='('){ this.pos++; const v=this.parseExpr(); this.skipWs(); if(this.peek()!==')') this.error('Thiếu )'); this.pos++; return v; }
+    if(c==='|'){ this.pos++; const v=this.parseExpr(); this.skipWs(); if(this.peek()!=='|') this.error('Thiếu |'); this.pos++; return Math.abs(v); }
+    if(c==='√'){ this.pos++; this.skipWs(); let v; if(this.peek()==='('){this.pos++; v=this.parseExpr(); this.skipWs(); if(this.peek()!==')') this.error('Thiếu )'); this.pos++;} else v=this.parsePostfix(); if(v<0) this.error('Căn số âm'); return Math.sqrt(v); }
+    if(c==='∛'){ this.pos++; this.skipWs(); let v; if(this.peek()==='('){this.pos++; v=this.parseExpr(); this.skipWs(); if(this.peek()!==')') this.error('Thiếu )'); this.pos++;} else v=this.parsePostfix(); return Math.cbrt(v); }
+    if(c==='π'){ this.pos++; return Math.PI; }
+    if(/[a-zA-Z]/.test(c)){
+      let s=this.pos;
+      while(this.pos<this.len && /[a-zA-Z]/.test(this.text[this.pos])) this.pos++;
+      return this.handleIdent(this.text.slice(s,this.pos));
+    }
+    if(/[0-9.]/.test(c)){
+      let s=this.pos;
+      while(this.pos<this.len && /[0-9.]/.test(this.text[this.pos])) this.pos++;
+      const n=parseFloat(this.text.slice(s,this.pos));
+      if(isNaN(n)) this.error('Số không hợp lệ');
+      return n;
+    }
+    this.error('Ký tự lạ: '+c);
+  }
+  handleIdent(word){
+    const w=word.toLowerCase();
+    if(w==='e') return Math.E;
+    if(w==='pi') return Math.PI;
+    if(w==='ans') return ANS;
+    const readArg=()=>{
+      this.skipWs();
+      if(this.peek()==='('){ this.pos++; const v=this.parseExpr(); this.skipWs(); if(this.peek()!==')') this.error('Thiếu )'); this.pos++; return v; }
+      return this.parsePostfix();
+    };
+    switch(w){
+      case 'sin': return Math.sin(toRad(readArg()));
+      case 'cos': return Math.cos(toRad(readArg()));
+      case 'tan': return Math.tan(toRad(readArg()));
+      case 'asin': { const v=readArg(); if(v<-1||v>1) this.error('asin: |x|≤1'); return fromRad(Math.asin(v)); }
+      case 'acos': { const v=readArg(); if(v<-1||v>1) this.error('acos: |x|≤1'); return fromRad(Math.acos(v)); }
+      case 'atan': return fromRad(Math.atan(readArg()));
+      case 'sqrt': { const v=readArg(); if(v<0) this.error('sqrt âm'); return Math.sqrt(v); }
+      case 'nroot': {
+        this.skipWs();
+        if(this.peek()!=='(') this.error('nroot cần dạng nroot(n,x)');
+        this.pos++;
+        const n=this.parseExpr();
+        this.skipWs();
+        if(this.peek()!==',') this.error('nroot cần 2 đối số: nroot(n,x)');
+        this.pos++;
+        const x=this.parseExpr();
+        this.skipWs();
+        if(this.peek()!==')') this.error('Thiếu )');
+        this.pos++;
+        if(n===0) this.error('Bậc căn n≠0');
+        if(x<0 && Math.round(n)%2===0) this.error('Căn bậc chẵn của số âm');
+        return x<0 ? -Math.pow(-x, 1/n) : Math.pow(x, 1/n);
+      }
+      case 'log': return Math.log10(readArg());
+      case 'ln': return Math.log(readArg());
+      case 'abs': return Math.abs(readArg());
+      case 'exp': return Math.exp(readArg());
+      default: this.error('Không rõ: '+word);
+    }
+  }
+}
+function factorial(n){
+  if(n<0 || Math.floor(n)!==n) throw new Error('x! cần n nguyên ≥0');
+  if(n>170) throw new Error('Số quá lớn');
+  let r=1; for(let i=2;i<=n;i++) r*=i; return r;
+}
+function evalExpr(str){
+  let s=str.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+  return new ExprParser(s).parse();
+}
+function evalWithVar(exprStr, varName, value){
+  let s=exprStr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+  const re=new RegExp('(?<![a-zA-Z])'+varName+'(?![a-zA-Z])','g');
+  s=s.replace(re, '('+value+')');
+  return new ExprParser(s).parse();
+}
+function fmt(n, digits=9){
+  if(typeof n!=='number'||isNaN(n)) return 'Lỗi';
+  if(!isFinite(n)) return n>0?'+∞':'-∞';
+  if(Math.abs(n)<1e-12) n=0;
+  return parseFloat(n.toFixed(digits)).toString();
+}
+function gcdNum(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a; }
+function lcmNum(a,b){ if(a===0||b===0) return 0; return Math.abs(a*b)/gcdNum(a,b); }
+function formatComplex(a,b){
+  const af=fmt(a,7), bAbs=fmt(Math.abs(b),7);
+  return b>=0 ? `${af}+${bAbs}i` : `${af}-${bAbs}i`;
+}
+function safeNum(s, name){
+  const v=parseFloat(s);
+  if(s===undefined||s===null||String(s).trim()===''||isNaN(v)) throw new Error((name||'Giá trị')+' thiếu/sai');
+  return v;
+}
+
+
+/* =========================================================================
+   PHẦN B: ĐỊNH NGHĨA STATE MÁY VÀ APPS
+   ========================================================================= */
+const state = {
+  screen: 'menu',      // 'menu' | 'app'
+  menuIndex: 0,
+  appId: null,
+  fields: [],          // [{key,label,value,type:'num'|'select', options?:[]}]
+  focusIndex: 0,
+  result: '',
+  resultErr: false,
+  shiftOn: false,
+  alphaOn: false,
+};
+
+const MENU_ITEMS = [
+  {id:1,  ic:'BAS', lb:'Cơ bản'},
+  {id:2,  ic:'TRI', lb:'Lượng giác'},
+  {id:3,  ic:'LOG', lb:'Log & mũ'},
+  {id:4,  ic:'C+i', lb:'Số phức'},
+  {id:5,  ic:'X=0', lb:'Giải PT'},
+  {id:6,  ic:'X>0', lb:'Bất PT'},
+  {id:7,  ic:'TBL', lb:'Bảng GT'},
+  {id:8,  ic:'A=B', lb:'SOLVE'},
+  {id:9,  ic:'STA', lb:'Thống kê'},
+  {id:10, ic:'A:B', lb:'Tỉ lệ'},
+  {id:11, ic:'HEX', lb:'Hệ cơ số'},
+  {id:12, ic:'VNX', lb:'HS Việt Nam'},
+  {id:13, ic:'SSx', lb:'Bảng tính'},
+];
+
+
+/* APP definitions. Each app: title, fields (key/label/default/type/options), compute(vals)->string */
+const APPS = {};
+
+// ---------- 1. CƠ BẢN: nhập biểu thức tự do, dùng 1 field "expr" ----------
+APPS[1] = {
+  title: 'CƠ BẢN: f(x) tự do',
+  fields: [ {key:'expr', label:'Expr', value:'', type:'expr'} ],
+  hint: 'Gõ biểu thức rồi nhấn EXE. ALPHA+) = x',
+  compute(v){
+    if(!v.expr.trim()) throw new Error('Nhập biểu thức');
+    const r = evalExpr(v.expr);
+    return `= ${fmt(r,10)}`;
+  }
+};
+
+// ---------- 2. LƯỢNG GIÁC ----------
+APPS[2] = {
+  title: 'LƯỢNG GIÁC',
+  fields: [
+    {key:'fn', label:'Hàm', value:'sin', type:'select', options:['sin','cos','tan','asin','acos','atan']},
+    {key:'x', label:'x', value:'', type:'num'},
+  ],
+  hint: `Đơn vị: ${ANGLE_UNIT}. MODE đổi DEG/RAD/GRA`,
+  compute(v){
+    const x = safeNum(v.x,'x');
+    const fn = v.fn;
+    if(fn==='sin') return `sin(${x}${unitSuffix()})=${fmt(Math.sin(toRad(x)),9)}`;
+    if(fn==='cos') return `cos(${x}${unitSuffix()})=${fmt(Math.cos(toRad(x)),9)}`;
+    if(fn==='tan'){
+      const c=Math.cos(toRad(x));
+      if(Math.abs(c)<1e-10) throw new Error('tan: tiệm cận');
+      return `tan(${x}${unitSuffix()})=${fmt(Math.tan(toRad(x)),9)}`;
+    }
+    if(fn==='asin'){ if(x<-1||x>1) throw new Error('asin: |x|≤1'); return `sin⁻¹(${x})=${fmt(fromRad(Math.asin(x)),7)}${unitSuffix()}`; }
+    if(fn==='acos'){ if(x<-1||x>1) throw new Error('acos: |x|≤1'); return `cos⁻¹(${x})=${fmt(fromRad(Math.acos(x)),7)}${unitSuffix()}`; }
+    if(fn==='atan'){ return `tan⁻¹(${x})=${fmt(fromRad(Math.atan(x)),7)}${unitSuffix()}`; }
+  }
+};
+
+// ---------- 3. LOG & MŨ ----------
+APPS[3] = {
+  title: 'LOG & MŨ',
+  fields: [
+    {key:'fn', label:'Hàm', value:'log10', type:'select', options:['log10','ln','log_a','e^x','10^x','a^x']},
+    {key:'a',  label:'a/cs', value:'', type:'num'},
+    {key:'x',  label:'x',   value:'', type:'num'},
+  ],
+  hint: 'log_a, a^x cần cả a và x. Còn lại chỉ cần x.',
+  compute(v){
+    const fn=v.fn;
+    if(fn==='log10'){ const x=safeNum(v.x,'x'); if(x<=0) throw new Error('x>0'); return `log(${x})=${fmt(Math.log10(x),9)}`; }
+    if(fn==='ln'){ const x=safeNum(v.x,'x'); if(x<=0) throw new Error('x>0'); return `ln(${x})=${fmt(Math.log(x),9)}`; }
+    if(fn==='log_a'){ const a=safeNum(v.a,'a'); const x=safeNum(v.x,'x'); if(a<=0||a===1) throw new Error('a>0,a≠1'); if(x<=0) throw new Error('x>0'); return `log_${a}(${x})=${fmt(Math.log(x)/Math.log(a),9)}`; }
+    if(fn==='e^x'){ const x=safeNum(v.x,'x'); return `e^${x}=${fmt(Math.exp(x),9)}`; }
+    if(fn==='10^x'){ const x=safeNum(v.x,'x'); return `10^${x}=${fmt(Math.pow(10,x),9)}`; }
+    if(fn==='a^x'){ const a=safeNum(v.a,'a'); const x=safeNum(v.x,'x'); return `${a}^${x}=${fmt(Math.pow(a,x),9)}`; }
+  }
+};
+
+// ---------- 4. SỐ PHỨC ----------
+APPS[4] = {
+  title: 'SỐ PHỨC z=a+bi',
+  fields: [
+    {key:'op', label:'Phép', value:'analyze', type:'select', options:['analyze','add','sub','mul','div']},
+    {key:'a1', label:'a1', value:'', type:'num'},
+    {key:'b1', label:'b1', value:'', type:'num'},
+    {key:'a2', label:'a2', value:'', type:'num'},
+    {key:'b2', label:'b2', value:'', type:'num'},
+  ],
+  hint: 'analyze: chỉ cần a1,b1 (z=a1+b1i). Khác: dùng cả z1,z2.',
+  compute(v){
+    const a1=safeNum(v.a1,'a1'), b1=safeNum(v.b1,'b1');
+    if(v.op==='analyze'){
+      const mod=Math.sqrt(a1*a1+b1*b1);
+      const arg=fromRad(Math.atan2(b1,a1));
+      return `|z|=${fmt(mod,7)} arg=${fmt(arg,5)}${unitSuffix()}\nz̄=${formatComplex(a1,-b1)}`;
+    }
+    const a2=safeNum(v.a2,'a2'), b2=safeNum(v.b2,'b2');
+    if(v.op==='add') return `z1+z2=${formatComplex(a1+a2,b1+b2)}`;
+    if(v.op==='sub') return `z1-z2=${formatComplex(a1-a2,b1-b2)}`;
+    if(v.op==='mul') return `z1×z2=${formatComplex(a1*a2-b1*b2, a1*b2+b1*a2)}`;
+    if(v.op==='div'){
+      const d=a2*a2+b2*b2;
+      if(d===0) throw new Error('z2=0');
+      return `z1÷z2=${formatComplex((a1*a2+b1*b2)/d, (b1*a2-a1*b2)/d)}`;
+    }
+  }
+};
+
+
+// ---------- 5. GIẢI PHƯƠNG TRÌNH ----------
+function durandKerner(coeffs){
+  const n=coeffs.length-1;
+  const c=coeffs.map(v=>v/coeffs[0]);
+  let roots=[];
+  for(let i=0;i<n;i++){ const a=2*Math.PI*i/n+0.4; roots.push({re:0.4*Math.cos(a), im:0.4*Math.sin(a)}); }
+  function evalP(z){ let re=0,im=0; for(let i=0;i<=n;i++){ const nre=re*z.re-im*z.im+c[i]; const nim=re*z.im+im*z.re; re=nre; im=nim; } return {re,im}; }
+  function sub(a,b){ return {re:a.re-b.re, im:a.im-b.im}; }
+  function mul(a,b){ return {re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re}; }
+  function div(a,b){ const d=b.re*b.re+b.im*b.im; if(d<1e-18) return {re:0,im:0}; return {re:(a.re*b.re+a.im*b.im)/d, im:(a.im*b.re-a.re*b.im)/d}; }
+  for(let it=0; it<500; it++){
+    let maxC=0; const nr=roots.slice();
+    for(let i=0;i<n;i++){
+      let denom={re:1,im:0};
+      for(let j=0;j<n;j++){ if(j===i) continue; denom=mul(denom, sub(roots[i],roots[j])); }
+      const delta=div(evalP(roots[i]), denom);
+      nr[i]=sub(roots[i], delta);
+      maxC=Math.max(maxC, Math.hypot(delta.re,delta.im));
+    }
+    roots=nr;
+    if(maxC<1e-12) break;
+  }
+  roots.forEach(r=>{ if(Math.abs(r.im)<1e-9) r.im=0; if(Math.abs(r.re)<1e-9) r.re=0; });
+  return roots;
+}
+
+APPS[5] = {
+  title: 'GIẢI PHƯƠNG TRÌNH',
+  fields: [
+    {key:'kind', label:'Loại', value:'q2', type:'select', options:['q2','q3','sys2']},
+    {key:'a', label:'a', value:'', type:'num'},
+    {key:'b', label:'b', value:'', type:'num'},
+    {key:'c', label:'c', value:'', type:'num'},
+    {key:'d', label:'d', value:'', type:'num'},
+    {key:'e', label:'e', value:'', type:'num'},
+    {key:'f', label:'f', value:'', type:'num'},
+  ],
+  getLabel(key, vals){
+    const labels = {
+      q2:   {kind:'Loại', a:'a', b:'b', c:'c', d:'(không dùng)', e:'(không dùng)', f:'(không dùng)'},
+      q3:   {kind:'Loại', a:'a', b:'b', c:'c', d:'d', e:'(không dùng)', f:'(không dùng)'},
+      sys2: {kind:'Loại', a:'a1 (hệ số x, PT1)', b:'b1 (hệ số y, PT1)', c:'c1 (vế phải, PT1)', d:'a2 (hệ số x, PT2)', e:'b2 (hệ số y, PT2)', f:'c2 (vế phải, PT2)'},
+    };
+    const map = labels[vals.kind] || labels.q2;
+    return map[key] || key;
+  },
+  getHint(vals){
+    if(vals.kind==='q2') return 'Giải: a·x² + b·x + c = 0  (a≠0)';
+    if(vals.kind==='q3') return 'Giải: a·x³ + b·x² + c·x + d = 0  (a≠0)';
+    if(vals.kind==='sys2') return 'Hệ: a1·x+b1·y=c1 và a2·x+b2·y=c2';
+    return '';
+  },
+  compute(v){
+    if(v.kind==='q2'){
+      const a=safeNum(v.a,'a'), b=safeNum(v.b,'b'), c=safeNum(v.c,'c');
+      if(a===0) throw new Error('a≠0');
+      const delta=b*b-4*a*c;
+      if(delta>0){
+        const x1=(-b+Math.sqrt(delta))/(2*a), x2=(-b-Math.sqrt(delta))/(2*a);
+        return `Δ=${fmt(delta,7)}\nx1=${fmt(x1,8)}\nx2=${fmt(x2,8)}`;
+      } else if(delta===0){
+        return `Δ=0\nx=${fmt(-b/(2*a),8)} (kép)`;
+      } else {
+        const re=-b/(2*a), im=Math.sqrt(-delta)/(2*a);
+        return `Δ=${fmt(delta,5)}<0\nx1=${formatComplex(re,im)}\nx2=${formatComplex(re,-im)}`;
+      }
+    }
+    if(v.kind==='q3'){
+      const a=safeNum(v.a,'a'), b=safeNum(v.b,'b'), c=safeNum(v.c,'c'), d=safeNum(v.d,'d');
+      if(a===0) throw new Error('a≠0');
+      const roots = durandKerner([a,b,c,d]);
+      let out='Nghiệm:\n';
+      roots.forEach((r,i)=>{ out += Math.abs(r.im)<1e-6 ? `x${i+1}=${fmt(r.re,7)}\n` : `x${i+1}=${formatComplex(r.re,r.im)}\n`; });
+      return out.trim();
+    }
+    if(v.kind==='sys2'){
+      const a1=safeNum(v.a,'a1'), b1=safeNum(v.b,'b1'), c1=safeNum(v.c,'c1');
+      const a2=safeNum(v.d,'a2'), b2=safeNum(v.e,'b2'), c2=safeNum(v.f,'c2');
+      const det=a1*b2-a2*b1;
+      if(Math.abs(det)<1e-12) throw new Error('Vô nghiệm/VSN');
+      const x=(c1*b2-c2*b1)/det, y=(a1*c2-a2*c1)/det;
+      return `x=${fmt(x,8)}\ny=${fmt(y,8)}`;
+    }
+  }
+};
+
+// ---------- 6. BẤT PHƯƠNG TRÌNH (bậc 2) ----------
+APPS[6] = {
+  title: 'BẤT PT BẬC HAI',
+  fields: [
+    {key:'a', label:'a', value:'', type:'num'},
+    {key:'b', label:'b', value:'', type:'num'},
+    {key:'c', label:'c', value:'', type:'num'},
+    {key:'sign', label:'Dấu', value:'>', type:'select', options:['>','<','>=','<=']},
+  ],
+  hint: 'ax²+bx+c {dấu} 0',
+  compute(v){
+    const a=safeNum(v.a,'a'), b=safeNum(v.b,'b'), c=safeNum(v.c,'c'), sign=v.sign;
+    function checkSign(val){ if(sign==='>') return val>0; if(sign==='<') return val<0; if(sign==='>=') return val>=0; return val<=0; }
+    if(a===0) throw new Error('a≠0 (dùng bậc 2 thật)');
+    const delta=b*b-4*a*c;
+    if(delta<0){
+      const always = a>0?1:-1;
+      return checkSign(always) ? 'Đúng ∀x∈ℝ' : 'Vô nghiệm';
+    }
+    if(delta===0){
+      const r=-b/(2*a);
+      if(sign==='>') return a>0?`x≠${fmt(r,7)}`:'Vô nghiệm';
+      if(sign==='<') return a<0?`x≠${fmt(r,7)}`:'Vô nghiệm';
+      if(sign==='>=') return a>0?'∀x∈ℝ':`x=${fmt(r,7)}`;
+      return a<0?'∀x∈ℝ':`x=${fmt(r,7)}`;
+    }
+    const x1=(-b-Math.sqrt(delta))/(2*a), x2=(-b+Math.sqrt(delta))/(2*a);
+    const lo=Math.min(x1,x2), hi=Math.max(x1,x2);
+    const outsidePos=a>0;
+    let desc;
+    if(sign==='>') desc = outsidePos? `x<${fmt(lo,7)} hoặc x>${fmt(hi,7)}` : `${fmt(lo,7)}<x<${fmt(hi,7)}`;
+    else if(sign==='<') desc = outsidePos? `${fmt(lo,7)}<x<${fmt(hi,7)}` : `x<${fmt(lo,7)} hoặc x>${fmt(hi,7)}`;
+    else if(sign==='>=') desc = outsidePos? `x≤${fmt(lo,7)} hoặc x≥${fmt(hi,7)}` : `${fmt(lo,7)}≤x≤${fmt(hi,7)}`;
+    else desc = outsidePos? `${fmt(lo,7)}≤x≤${fmt(hi,7)}` : `x≤${fmt(lo,7)} hoặc x≥${fmt(hi,7)}`;
+    return `Δ=${fmt(delta,6)}\n${desc}`;
+  }
+};
+
+
+// ---------- 7. BẢNG GIÁ TRỊ HÀM SỐ ----------
+APPS[7] = {
+  title: 'BẢNG GIÁ TRỊ f(x)',
+  fields: [
+    {key:'fx', label:'f(x)', value:'', type:'expr'},
+    {key:'start', label:'Từ', value:'-3', type:'num'},
+    {key:'end', label:'Đến', value:'3', type:'num'},
+    {key:'step', label:'Bước', value:'1', type:'num'},
+  ],
+  hint: 'ALPHA+) = x. EXE để tạo bảng (cuộn xem KQ).',
+  compute(v){
+    if(!v.fx.trim()) throw new Error('Nhập f(x)');
+    const start=safeNum(v.start,'Từ'), end=safeNum(v.end,'Đến'), step=safeNum(v.step,'Bước');
+    if(step===0) throw new Error('Bước≠0');
+    if(Math.abs((end-start)/step) > 60) throw new Error('Quá nhiều giá trị, tăng bước');
+    let out='';
+    if(step>0){ for(let x=start; x<=end+1e-9; x+=step){ out+=`x=${fmt(x,4)}: ${fmt(evalWithVar(v.fx,'x',x),6)}\n`; } }
+    else { for(let x=start; x>=end-1e-9; x+=step){ out+=`x=${fmt(x,4)}: ${fmt(evalWithVar(v.fx,'x',x),6)}\n`; } }
+    return out.trim();
+  }
+};
+
+// ---------- 8. SOLVE: giải phương trình dạng A=B bất kỳ (số) ----------
+APPS[8] = {
+  title: 'SOLVE: A = B',
+  fields: [
+    {key:'eq', label:'PT', value:'', type:'expr'},
+    {key:'x0', label:'x0 (dò từ)', value:'1', type:'num'},
+  ],
+  hint: 'ALPHA+)=x. SHIFT+EXE(=) để gõ dấu =. VD: x+2=2x',
+  compute(v){
+    if(!v.eq.includes('=')) throw new Error('Cần dấu = , vd: x+2=2x');
+    const parts = v.eq.split('=');
+    if(parts.length!==2) throw new Error('Chỉ dùng đúng 1 dấu =');
+    const [lhs, rhs] = parts;
+    if(!lhs.trim() || !rhs.trim()) throw new Error('Thiếu vế trái/phải');
+    const x0 = safeNum(v.x0,'x0');
+    const f = (x)=> evalWithVar(lhs,'x',x) - evalWithVar(rhs,'x',x);
+
+    let x = x0, converged=false;
+    for(let i=0;i<200;i++){
+      const fx=f(x);
+      if(Math.abs(fx)<1e-10){ converged=true; break; }
+      const h=1e-6;
+      const dfx=(f(x+h)-f(x-h))/(2*h);
+      if(Math.abs(dfx)<1e-12) break;
+      const xNew=x-fx/dfx;
+      if(!isFinite(xNew)) break;
+      if(Math.abs(xNew-x)<1e-12){ x=xNew; converged=true; break; }
+      x=xNew;
+    }
+    if(converged && isFinite(x) && Math.abs(f(x))<1e-6){
+      return `x = ${fmt(x,9)}`;
+    }
+    // fallback: scan for sign changes
+    let found=[];
+    let prev=f(x0-10);
+    for(let xi=-10; xi<=10; xi+=0.05){
+      const xx=x0+xi;
+      const cur=f(xx);
+      if(isFinite(prev) && isFinite(cur) && prev*cur<0){
+        let lo=xx-0.05, hi=xx;
+        for(let k=0;k<60;k++){ const mid=(lo+hi)/2; if(f(lo)*f(mid)<=0) hi=mid; else lo=mid; }
+        found.push((lo+hi)/2);
+      }
+      prev=cur;
+    }
+    if(found.length) return 'x ≈ ' + found.map(r=>fmt(r,7)).join(' hoặc x ≈ ');
+    throw new Error('Không tìm thấy nghiệm, thử x0 khác');
+  }
+};
+
+// ---------- 9. THỐNG KÊ ----------
+APPS[9] = {
+  title: 'THỐNG KÊ',
+  fields: [
+    {key:'data', label:'Data', value:'', type:'expr'},
+  ],
+  hint: 'Nhập số cách nhau bởi dấu phẩy. VD: 2,4,4,4,5,5,7,9',
+  compute(v){
+    const parts = v.data.split(/[,\s]+/).map(s=>s.trim()).filter(s=>s.length);
+    const nums = parts.map(p=>parseFloat(p));
+    if(nums.some(isNaN) || nums.length===0) throw new Error('Dữ liệu không hợp lệ');
+    const n=nums.length;
+    const mean=nums.reduce((a,b)=>a+b,0)/n;
+    const sorted=[...nums].sort((a,b)=>a-b);
+    const median = n%2===0 ? (sorted[n/2-1]+sorted[n/2])/2 : sorted[(n-1)/2];
+    const sdPop = Math.sqrt(nums.reduce((s,x)=>s+(x-mean)**2,0)/n);
+    return `n=${n}\nTB=${fmt(mean,7)}\nTrung vị=${fmt(median,7)}\nσ=${fmt(sdPop,7)}`;
+  }
+};
+
+// ---------- 10. TỈ LỆ (RATIO) ----------
+APPS[10] = {
+  title: 'TỈ LỆ (RATIO)',
+  fields: [
+    {key:'mode', label:'Loại', value:'split', type:'select', options:['split','simplify','direct','inverse']},
+    {key:'total', label:'Tổng/a1', value:'', type:'num'},
+    {key:'parts', label:'TL/b1', value:'', type:'expr'},
+    {key:'extra', label:'a2', value:'', type:'num'},
+  ],
+  hint: 'split: Tổng + TL (vd 2:3:5). simplify: a1:b1. direct/inverse: a1,b1,a2→b2',
+  compute(v){
+    if(v.mode==='split'){
+      const total=safeNum(v.total,'Tổng');
+      const parts=v.parts.split(/[:,]/).map(s=>parseFloat(s.trim()));
+      if(parts.some(isNaN)||parts.length<2) throw new Error('Tỉ lệ vd: 2:3:5');
+      const sum=parts.reduce((a,b)=>a+b,0);
+      if(sum===0) throw new Error('Tổng tỉ lệ ≠0');
+      return parts.map((p,i)=>`P${i+1}=${fmt(total*p/sum,5)}`).join('\n');
+    }
+    if(v.mode==='simplify'){
+      const a=safeNum(v.total,'a1'), b=safeNum(v.parts,'b1');
+      if(b===0) throw new Error('b1≠0');
+      let scale=1;
+      while(Math.abs(a*scale-Math.round(a*scale))>1e-9 || Math.abs(b*scale-Math.round(b*scale))>1e-9){ scale*=10; if(scale>1e7) break; }
+      let ia=Math.round(a*scale), ib=Math.round(b*scale);
+      const g=gcdNum(ia,ib)||1; ia/=g; ib/=g;
+      return `${a}:${b} = ${ia}:${ib}`;
+    }
+    const a1=safeNum(v.total,'a1'), b1=safeNum(v.parts,'b1'), a2=safeNum(v.extra,'a2');
+    if(v.mode==='direct'){ if(a1===0) throw new Error('a1≠0'); return `b2=${fmt((a2*b1)/a1,8)}`; }
+    if(v.mode==='inverse'){ if(a2===0) throw new Error('a2≠0'); return `b2=${fmt((a1*b1)/a2,8)}`; }
+  }
+};
+
+
+// ---------- 11. HỆ CƠ SỐ ----------
+APPS[11] = {
+  title: 'HỆ CƠ SỐ',
+  fields: [
+    {key:'mode', label:'Loại', value:'conv', type:'select', options:['conv','AND','OR','XOR','NOT']},
+    {key:'val', label:'Giá trị', value:'', type:'expr'},
+    {key:'base', label:'Từ hệ', value:'10', type:'select', options:['2','8','10','16']},
+    {key:'val2', label:'B (logic)', value:'', type:'expr'},
+  ],
+  hint: 'conv: đổi giá trị sang BIN/OCT/DEC/HEX. Logic: dùng val,val2 (DEC hoặc 0x/0b).',
+  compute(v){
+    function parseLogic(s){
+      s=s.trim();
+      if(s.startsWith('0x')||s.startsWith('0X')) return parseInt(s.slice(2),16);
+      if(s.startsWith('0b')||s.startsWith('0B')) return parseInt(s.slice(2),2);
+      const n=parseInt(s,10);
+      if(isNaN(n)) throw new Error('Giá trị sai: '+s);
+      return n;
+    }
+    if(v.mode==='conv'){
+      const fromBase=parseInt(v.base);
+      const valid='0123456789ABCDEF'.slice(0,fromBase);
+      const up=v.val.trim().toUpperCase();
+      if(!up) throw new Error('Nhập giá trị');
+      for(const ch of up) if(!valid.includes(ch)) throw new Error(`'${ch}' sai ở hệ ${fromBase}`);
+      const dec=parseInt(up,fromBase);
+      return `BIN=${dec.toString(2)}\nOCT=${dec.toString(8)}\nDEC=${dec.toString(10)}\nHEX=${dec.toString(16).toUpperCase()}`;
+    }
+    const a=parseLogic(v.val);
+    if(v.mode==='NOT') return `NOT ${a} = ${~a}`;
+    const b=parseLogic(v.val2);
+    if(v.mode==='AND') return `${a} AND ${b} = ${a&b}`;
+    if(v.mode==='OR') return `${a} OR ${b} = ${a|b}`;
+    if(v.mode==='XOR') return `${a} XOR ${b} = ${a^b}`;
+  }
+};
+
+// ---------- 12. HỮU ÍCH CHO HS VIỆT NAM ----------
+APPS[12] = {
+  title: 'HỮU ÍCH CHO HS VN',
+  fields: [
+    {key:'mode', label:'Loại', value:'gcdlcm', type:'select', options:['gcdlcm','prime','combo','sigma']},
+    {key:'nums', label:'Số/n', value:'', type:'expr'},
+    {key:'r', label:'r (C/P)', value:'', type:'num'},
+    {key:'fi', label:'f(i)/đến', value:'', type:'expr'},
+  ],
+  hint: 'sigma: ALPHA+, = i trong f(i). gcdlcm:"12,18,24" prime:1số combo:n,r',
+  compute(v){
+    if(v.mode==='gcdlcm'){
+      const nums=v.nums.split(',').map(s=>parseInt(s.trim()));
+      if(nums.length<2||nums.some(isNaN)) throw new Error('VD: 12,18,24');
+      let g=Math.abs(nums[0]), l=Math.abs(nums[0]);
+      for(let i=1;i<nums.length;i++){ g=gcdNum(g,nums[i]); l=lcmNum(l,nums[i]); }
+      return `GCD=${g}\nLCM=${l}`;
+    }
+    if(v.mode==='prime'){
+      let n=parseInt(v.nums);
+      if(isNaN(n)||n<2) throw new Error('n≥2');
+      const orig=n; const factors=[]; let d=2;
+      while(d*d<=n){ let c=0; while(n%d===0){n/=d;c++;} if(c>0) factors.push(c>1?`${d}^${c}`:`${d}`); d++; }
+      if(n>1) factors.push(`${n}`);
+      return `${orig}=${factors.join('×')}`;
+    }
+    if(v.mode==='combo'){
+      const n=parseInt(v.nums), r=parseInt(v.r);
+      if(isNaN(n)||isNaN(r)||n<0||r<0||r>n) throw new Error('Cần 0≤r≤n');
+      if(n>170) throw new Error('n≤170');
+      const C = factorial(n)/(factorial(r)*factorial(n-r));
+      const P = factorial(n)/factorial(n-r);
+      return `C(${n},${r})=${fmt(C,0)}\nP(${n},${r})=${fmt(P,0)}`;
+    }
+    if(v.mode==='sigma'){
+      const from=parseInt(v.nums), to=parseInt(v.r);
+      if(isNaN(from)||isNaN(to)) throw new Error('Cần "Số/n"=từ i, "r"=đến i');
+      if(!v.fi.trim()) throw new Error('Nhập f(i) ở field cuối');
+      if(to-from>100000) throw new Error('Khoảng quá lớn');
+      let sum=0;
+      for(let i=from;i<=to;i++) sum += evalWithVar(v.fi,'i',i);
+      return `Σ(i=${from}..${to}) = ${fmt(sum,9)}`;
+    }
+  }
+};
+
+
+// ---------- 13. SPREADSHEET MINI (rút gọn cho bàn phím vật lý) ----------
+const ssData = {}; // "A1" -> raw string
+const SS_COLS = ['A','B','C','D'];
+const SS_ROWS = 6;
+
+function ssCellRange(rangeStr){
+  const [s,e] = rangeStr.split(':');
+  const sM=s.match(/^([A-D])([1-6])$/), eM=e.match(/^([A-D])([1-6])$/);
+  if(!sM||!eM) throw new Error('Vùng sai: '+rangeStr);
+  const c1=SS_COLS.indexOf(sM[1]), c2=SS_COLS.indexOf(eM[1]);
+  const r1=parseInt(sM[2]), r2=parseInt(eM[2]);
+  const cells=[];
+  for(let c=Math.min(c1,c2);c<=Math.max(c1,c2);c++) for(let r=Math.min(r1,r2);r<=Math.max(r1,r2);r++) cells.push(SS_COLS[c]+r);
+  return cells;
+}
+function ssGetValue(id, visiting){
+  visiting=visiting||new Set();
+  if(visiting.has(id)) throw new Error('Vòng lặp tại '+id);
+  visiting.add(id);
+  const raw=ssData[id];
+  if(raw===undefined||raw==='') return 0;
+  if(raw.startsWith('=')) return ssEval(raw.slice(1), visiting);
+  const n=parseFloat(raw);
+  return isNaN(n)?0:n;
+}
+function ssEval(formula, visiting){
+  let f=formula.trim();
+  const m=f.match(/^(SUM|AVERAGE|MAX|MIN|COUNT)\(([^)]+)\)$/i);
+  if(m){
+    const fn=m[1].toUpperCase();
+    const cells=m[2].includes(':') ? ssCellRange(m[2]) : [m[2].trim()];
+    const vals=cells.map(id=>ssGetValue(id,new Set(visiting)));
+    if(fn==='SUM') return vals.reduce((a,b)=>a+b,0);
+    if(fn==='AVERAGE') return vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+    if(fn==='MAX') return Math.max(...vals);
+    if(fn==='MIN') return Math.min(...vals);
+    if(fn==='COUNT') return vals.length;
+  }
+  let expr=f.replace(/[A-D][1-6]/g, mt=>'('+ssGetValue(mt,new Set(visiting))+')');
+  expr=expr.replace(/×/g,'*').replace(/÷/g,'/');
+  return new ExprParser(expr).parse();
+}
+
+APPS[13] = {
+  title: 'SPREADSHEET MINI',
+  fields: [
+    {key:'cell', label:'Ô (vd A1)', value:'A1', type:'expr'},
+    {key:'val', label:'Giá trị/=CT', value:'', type:'expr'},
+    {key:'view', label:'Xem ô', value:'A1', type:'expr'},
+  ],
+  hint: 'Gán: nhập Ô+Giá trị rồi EXE. Xem: đổi "Xem ô" rồi EXE để đọc kết quả ô đó. Hỗ trợ =SUM(A1:A4) ..',
+  compute(v){
+    const cellId = v.cell.trim().toUpperCase();
+    if(v.val.trim() !== ''){
+      if(!/^[A-D][1-6]$/.test(cellId)) throw new Error('Ô vd: A1..D6');
+      ssData[cellId] = v.val.trim();
+    }
+    const viewId = (v.view||cellId).trim().toUpperCase();
+    if(!/^[A-D][1-6]$/.test(viewId)) throw new Error('Ô xem vd: A1..D6');
+    const val = ssGetValue(viewId, new Set());
+    let out = `${cellId} đã lưu: ${ssData[cellId] ?? '(trống)'}\n${viewId} = ${fmt(val,7)}`;
+    return out;
+  }
+};
+
+
+/* =========================================================================
+   PHẦN C: RENDER ENGINE
+   ========================================================================= */
+function enterApp(appId){
+  state.screen='app';
+  state.appId=appId;
+  const def = APPS[appId];
+  state.fields = def.fields.map(f=>({...f}));
+  state.focusIndex = 0;
+  state.result='';
+  state.resultErr=false;
+}
+function backToMenu(){
+  state.screen='menu';
+  state.appId=null;
+  state.result='';
+  state.resultErr=false;
+}
+
+function render(){
+  document.getElementById('stMode').textContent = ANGLE_UNIT;
+  document.getElementById('stMode').classList.add('on');
+  document.getElementById('stShift').classList.toggle('on', state.shiftOn);
+  document.getElementById('stAlpha').classList.toggle('on', state.alphaOn);
+
+  const body = document.getElementById('lcdBody');
+  if(state.screen==='menu'){
+    renderMenu(body);
+  } else {
+    renderApp(body);
+  }
+}
+
+function renderMenu(body){
+  let html = '<div class="lcd-menu-grid">';
+  MENU_ITEMS.forEach((item, i)=>{
+    const sel = i===state.menuIndex;
+    html += `<div class="lcd-menu-item ${sel?'sel':''}">
+      <div class="ic">${item.id}</div>
+      <div class="lb">${item.lb}</div>
+    </div>`;
+  });
+  html += '</div>';
+  html += `<div class="lcd-hint">▲▼◄► chọn · EXE mở · ${MENU_ITEMS[state.menuIndex].lb}</div>`;
+  body.innerHTML = html;
+}
+
+function renderApp(body){
+  const def = APPS[state.appId];
+  let html = `<div class="lcd-app-title"><span>${def.title}</span><span class="back-hint">ANS=${fmt(ANS,4)}</span></div>`;
+  html += '<div class="lcd-fields">';
+
+  // build a plain {key: value} snapshot to feed dynamic label/hint functions
+  const valsSnapshot = {};
+  state.fields.forEach(fl=>{ valsSnapshot[fl.key]=fl.value; });
+
+  const MAX_VISIBLE = 3;
+  const total = state.fields.length;
+  let startIdx = 0;
+  if(total > MAX_VISIBLE){
+    // center window around focusIndex, clamped to valid range
+    startIdx = state.focusIndex - Math.floor((MAX_VISIBLE-1)/2);
+    startIdx = Math.max(0, Math.min(startIdx, total-MAX_VISIBLE));
+  }
+  const endIdx = Math.min(total, startIdx + MAX_VISIBLE);
+
+  if(startIdx > 0){
+    html += `<div class="lcd-field-row" style="opacity:.5; font-size:9px;">▲ còn ${startIdx} trường phía trên</div>`;
+  }
+
+  state.fields.slice(startIdx, endIdx).forEach((f, localI)=>{
+    const i = startIdx + localI;
+    const focused = i===state.focusIndex;
+    let displayVal;
+    if(f.type==='select'){
+      displayVal = f.value;
+    } else {
+      displayVal = f.value === '' ? '' : escapeHtmlLcd(f.value);
+    }
+    if(focused && f.type!=='select'){
+      displayVal += '<span class="blink-cursor"></span>';
+    }
+    if(focused && f.type==='select'){
+      displayVal = '◄ ' + displayVal + ' ►';
+    }
+    const label = (typeof def.getLabel === 'function') ? def.getLabel(f.key, valsSnapshot) : f.label;
+    html += `<div class="lcd-field-row ${focused?'focused':''}">
+      <span class="flabel">${label}:</span>
+      <span class="fval">${displayVal||'&nbsp;'}</span>
+    </div>`;
+  });
+
+  if(endIdx < total){
+    html += `<div class="lcd-field-row" style="opacity:.5; font-size:9px;">▼ còn ${total-endIdx} trường phía dưới</div>`;
+  }
+
+  html += '</div>';
+  if(state.result){
+    html += `<div class="lcd-result ${state.resultErr?'err':''}">${escapeHtmlLcd(state.result)}</div>`;
+  } else {
+    const hintText = (typeof def.getHint === 'function') ? def.getHint(valsSnapshot) : (def.hint||'');
+    html += `<div class="lcd-hint">${hintText}</div>`;
+  }
+  body.innerHTML = html;
+}
+function escapeHtmlLcd(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+
+/* =========================================================================
+   PHẦN D: INPUT HANDLER
+   ========================================================================= */
+function currentField(){
+  if(state.screen!=='app') return null;
+  return state.fields[state.focusIndex];
+}
+
+function insertToken(token){
+  const f = currentField();
+  if(!f) return;
+  if(f.type==='select') return; // select fields change via LEFT/RIGHT only
+  f.value = (f.value||'') + token;
+}
+function backspaceField(){
+  const f = currentField();
+  if(!f || f.type==='select') return;
+  f.value = (f.value||'').slice(0,-1);
+}
+
+function moveFocus(dir){
+  if(state.screen==='menu'){
+    const cols=5;
+    const n=MENU_ITEMS.length;
+    const rows=Math.ceil(n/cols);
+    let idx = state.menuIndex;
+    let row = Math.floor(idx/cols), col = idx%cols;
+    if(dir==='LEFT') idx = (idx-1+n)%n;
+    else if(dir==='RIGHT') idx = (idx+1)%n;
+    else if(dir==='UP'){
+      row = (row-1+rows)%rows;
+      let candidate = row*cols+col;
+      if(candidate>=n) candidate = n-1; // last row shorter: clamp to last item
+      idx = candidate;
+    } else if(dir==='DOWN'){
+      row = (row+1)%rows;
+      let candidate = row*cols+col;
+      if(candidate>=n) candidate = col; // wrapped past short last row -> go to top row same col
+      idx = candidate;
+    }
+    state.menuIndex = idx;
+    return;
+  }
+  // app screen
+  const f = currentField();
+  if(dir==='UP'){ state.focusIndex = (state.focusIndex-1+state.fields.length)%state.fields.length; state.result=''; return; }
+  if(dir==='DOWN'){ state.focusIndex = (state.focusIndex+1)%state.fields.length; state.result=''; return; }
+  if(f && f.type==='select'){
+    const opts=f.options;
+    let oi=opts.indexOf(f.value);
+    if(dir==='LEFT') oi=(oi-1+opts.length)%opts.length;
+    if(dir==='RIGHT') oi=(oi+1)%opts.length;
+    f.value=opts[oi];
+  }
+}
+
+function runCompute(){
+  const def = APPS[state.appId];
+  const vals = {};
+  state.fields.forEach(f=>{ vals[f.key]=f.value; });
+  try{
+    const r = def.compute(vals);
+    state.result = r;
+    state.resultErr = false;
+    ANS = extractAnsValue(r, vals);
+  }catch(e){
+    state.result = 'Lỗi';
+    state.resultErr = true;
+  }
+}
+
+// Try to pull a single numeric value out of a result for storing into ANS.
+// Looks for the last number in the result string; falls back to leaving ANS unchanged.
+function extractAnsValue(resultStr, vals){
+  if(typeof resultStr !== 'string') return ANS;
+  const matches = resultStr.match(/-?\d+\.?\d*/g);
+  if(!matches || !matches.length) return ANS;
+  const n = parseFloat(matches[matches.length-1]);
+  return isNaN(n) ? ANS : n;
+}
+
+function handleKey(key){
+  // numeric / operator tokens that just insert text
+  const directTokens = {
+    '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
+    'dot':'.', 'lparen':'(', 'pi':'π', 'euler':'e',
+    'add':'+', 'sub':'-', 'mul':'×', 'div':'÷', 'percent':'%',
+  };
+  if(key in directTokens){ insertToken(directTokens[key]); render(); return; }
+
+  if(key==='rparen'){
+    insertToken(state.alphaOn ? 'x' : ')');
+    state.alphaOn = false;
+    render(); return;
+  }
+  if(key==='comma'){
+    insertToken(state.alphaOn ? 'i' : ',');
+    state.alphaOn = false;
+    render(); return;
+  }
+
+  switch(key){
+    case 'UP': moveFocus('UP'); break;
+    case 'DOWN': moveFocus('DOWN'); break;
+    case 'LEFT': moveFocus('LEFT'); break;
+    case 'RIGHT': moveFocus('RIGHT'); break;
+
+    case 'EXE':
+      if(state.screen==='menu'){ enterApp(MENU_ITEMS[state.menuIndex].id); }
+      else { runCompute(); }
+      break;
+    case 'EXE2':
+      if(state.shiftOn){ insertToken('='); state.shiftOn=false; render(); return; }
+      if(state.screen==='menu'){ enterApp(MENU_ITEMS[state.menuIndex].id); }
+      else { runCompute(); }
+      break;
+
+    case 'MENU': backToMenu(); break;
+    case 'EXIT':
+      if(state.screen==='app') backToMenu();
+      break;
+
+    case 'AC':
+      if(state.screen==='app'){
+        state.fields.forEach(f=>{ if(f.type!=='select') f.value=''; });
+        state.result=''; state.resultErr=false;
+      }
+      break;
+    case 'DEL': case 'DEL2': backspaceField(); break;
+
+    case 'SHIFT': state.shiftOn = !state.shiftOn; return; // return early, don't clear shift below
+    case 'ALPHA': state.alphaOn = !state.alphaOn; render(); return; // don't clear shift, independent toggle
+    case 'ON': /* power on, no-op */ break;
+
+    case 'MODE':
+      // cycle angle unit DEG -> RAD -> GRA -> DEG
+      ANGLE_UNIT = ANGLE_UNIT==='DEG' ? 'RAD' : (ANGLE_UNIT==='RAD' ? 'GRA' : 'DEG');
+      break;
+
+    case 'neg': insertToken('-'); break;
+
+    // function keys: insert as text functions, work inside 'expr' fields;
+    // for non-expr numeric fields, SHIFT toggles inverse variant.
+    case 'sin': insertFn(state.shiftOn ? 'asin(' : 'sin('); break;
+    case 'cos': insertFn(state.shiftOn ? 'acos(' : 'cos('); break;
+    case 'tan': insertFn(state.shiftOn ? 'atan(' : 'tan('); break;
+    case 'asin': insertFn('asin('); break;
+    case 'acos': insertFn('acos('); break;
+    case 'atan': insertFn('atan('); break;
+    case 'log': insertFn(state.shiftOn ? '10^(' : 'log('); break;
+    case 'ln': insertFn(state.shiftOn ? 'e^(' : 'ln('); break;
+    case 'sqrt': insertFn('√('); break;
+    case 'nroot': insertFn('nroot('); break;
+    case 'pow': insertToken('^'); break;
+    case 'sq': insertToken('^2'); break;
+    case 'fact': insertToken('!'); break;
+    case 'abs': insertFn('|'); break;
+    case 'EXP10': insertToken('×10^'); break;
+    case 'frac': insertToken('/'); break;
+    case 'comma2': insertToken(','); break;
+    case 'ANS': insertToken('ANS'); break;
+
+    default: break;
+  }
+  if(state.shiftOn && !['SHIFT'].includes(key)) state.shiftOn = false;
+  render();
+}
+function insertFn(token){
+  const f = currentField();
+  if(!f) return;
+  if(f.type==='select') return;
+  f.value = (f.value||'') + token;
+}
+
+
+/* =========================================================================
+   PHẦN E: GẮN EVENT LISTENER + KHỞI TẠO
+   ========================================================================= */
+document.getElementById('keypadWrap').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-key]');
+  if(!btn) return;
+  handleKey(btn.dataset.key);
+});
+
+// Optional: physical computer keyboard support for convenience
+window.addEventListener('keydown', (e)=>{
+  const map = {
+    'ArrowUp':'UP', 'ArrowDown':'DOWN', 'ArrowLeft':'LEFT', 'ArrowRight':'RIGHT',
+    'Enter':'EXE', 'Escape':'MENU', 'Backspace':'DEL',
+  };
+  if(map[e.key]){ handleKey(map[e.key]); e.preventDefault(); return; }
+  if(/^[0-9]$/.test(e.key)){ handleKey(e.key); return; }
+  if(e.key==='.'){ handleKey('dot'); return; }
+  if(e.key==='+'){ handleKey('add'); return; }
+  if(e.key==='-'){ handleKey('sub'); return; }
+  if(e.key==='*'){ handleKey('mul'); return; }
+  if(e.key==='/'){ handleKey('div'); return; }
+  if(e.key==='('){ handleKey('lparen'); return; }
+  if(e.key===')'){ handleKey('rparen'); return; }
+});
+
+render();
+</script>
+
+</body>
+</html>
