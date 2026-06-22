@@ -1235,11 +1235,11 @@
      CASIO FLOATING WIDGET
 ========================= -->
 
-<button id="casioToggleBtn">🧮</button>
+<button id="casioToggleBtn">Ẩn/Hiện Casio</button>
 
 <div id="casioContainer">
     <div id="casioHeader">
-        <span>fx-TMATH 991</span>
+        <span>giữ ở đây để di chuyển</span>
         <button id="casioHideBtn">✕</button>
     </div>
 
@@ -1258,17 +1258,25 @@
     bottom:20px;
     z-index:999999;
 
-    width:60px;
-    height:60px;
+    width:75px;      /* Tăng kích thước vòng tròn to lên (gốc là 60px) */
+    height:75px;     /* Tăng kích thước vòng tròn to lên (gốc là 60px) */
 
     border:none;
     border-radius:50%;
-    font-size:28px;
+    font-size:13px;  /* Giảm cỡ chữ bé lại để vừa vặn (gốc là 28px) */
+    font-weight:bold;/* Làm chữ đậm lên cho rõ ràng, dễ đọc */
     cursor:pointer;
 
-    box-shadow:0 4px 15px rgba(0,0,0,.25);
-}
+    background:#2563eb; /* Đổi nền sang màu xanh dương cho đồng bộ với Casio */
+    color:white;        /* Màu chữ trắng giúp nổi bật trên nền xanh */
 
+    box-shadow:0 4px 15px rgba(0,0,0,.25);
+    
+    /* Bộ căn giữa giúp chữ "Ẩn/Hiện" luôn nằm chính giữa vòng tròn */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 #casioContainer{
     position:fixed;
 
@@ -1369,96 +1377,85 @@ casioHideBtn.onclick = () => {
 };
 
 /* =====================
-   KÉO THẢ
+   XỬ LÝ DI CHUYỂN CASIO (DRAG) KHÔNG TRÀN MÀN HÌNH
 ===================== */
-
 let dragging = false;
-
 let offsetX = 0;
 let offsetY = 0;
 
-casioHeader.addEventListener(
-"mousedown",
-(e)=>{
-
+casioHeader.addEventListener("mousedown", (e) => {
     dragging = true;
-
-    offsetX =
-        e.clientX -
-        casioContainer.offsetLeft;
-
-    offsetY =
-        e.clientY -
-        casioContainer.offsetTop;
+    offsetX = e.clientX - casioContainer.offsetLeft;
+    offsetY = e.clientY - casioContainer.offsetTop;
 });
 
-document.addEventListener(
-"mousemove",
-(e)=>{
+document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
 
-    if(!dragging) return;
+    let left = e.clientX - offsetX;
+    let top = e.clientY - offsetY;
 
-    casioContainer.style.left =
-        (e.clientX - offsetX) + "px";
+    // Giới hạn không cho lệch ra ngoài lề trái/phải màn hình
+    const maxLeft = window.innerWidth - casioContainer.offsetWidth;
+    left = Math.max(0, Math.min(left, maxLeft));
 
-    casioContainer.style.top =
-        (e.clientY - offsetY) + "px";
+    // Giới hạn không cho lệch ra ngoài lề trên/dưới màn hình
+    const maxTop = window.innerHeight - casioContainer.offsetHeight;
+    top = Math.max(0, Math.min(top, maxTop));
 
-    casioContainer.style.right =
-        "auto";
+    casioContainer.style.left = left + "px";
+    casioContainer.style.top = top + "px";
+    casioContainer.style.right = "auto";
 });
 
-document.addEventListener(
-"mouseup",
-()=>{
+document.addEventListener("mouseup", () => {
     dragging = false;
 });
 
+
 /* =====================
-   RESIZE GIỮ TỈ LỆ
+   XỬ LÝ THAY ĐỔI KÍCH THƯỚC (RESIZE) KHÔNG TRÀN MÀN HÌNH
 ===================== */
-
 let resizing = false;
+const aspectRatio = 420 / 780;
 
-const aspectRatio =
-420 / 780;
-
-resizeHandle.addEventListener(
-"mousedown",
-()=>{
+resizeHandle.addEventListener("mousedown", () => {
     resizing = true;
 });
 
-document.addEventListener(
-"mousemove",
-(e)=>{
+document.addEventListener("mousemove", (e) => {
+    if (!resizing) return;
 
-    if(!resizing) return;
+    const rect = casioContainer.getBoundingClientRect();
+    
+    // Tính kích thước mới dựa theo vị trí chuột kéo
+    let newWidth = e.clientX - rect.left;
+    let newHeight = newWidth / aspectRatio;
 
-    const rect =
-        casioContainer.getBoundingClientRect();
+    // Chặn không cho phóng to vượt quá rìa phải màn hình
+    if (rect.left + newWidth > window.innerWidth) {
+        newWidth = window.innerWidth - rect.left;
+        newHeight = newWidth / aspectRatio;
+    }
 
-    let newWidth =
-        e.clientX - rect.left;
+    // Chặn không cho phóng to vượt quá rìa dưới màn hình
+    if (rect.top + newHeight > window.innerHeight) {
+        newHeight = window.innerHeight - rect.top;
+        newWidth = newHeight * aspectRatio;
+    }
 
-    if(newWidth < 250)
-        newWidth = 250;
-
-    let newHeight =
-        newWidth / aspectRatio;
-
-    casioContainer.style.width =
-        newWidth + "px";
-
-    casioContainer.style.height =
-        newHeight + "px";
+    // Giữ kích thước hiển thị tối thiểu (rộng trên 200px) để không bị biến mất
+    if (newWidth > 200) {
+        casioContainer.style.width = newWidth + "px";
+        casioContainer.style.height = newHeight + "px";
+    }
 });
 
-document.addEventListener(
-"mouseup",
-()=>{
+document.addEventListener("mouseup", () => {
     resizing = false;
 });
+
+
 </script>
 
 <!-- =========================
