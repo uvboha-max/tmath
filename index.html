@@ -135,6 +135,60 @@
 
         .empty-view { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .hidden { display: none !important; }
+
+        /* ============================================================
+           RESPONSIVE - HỖ TRỢ HIỂN THỊ TRÊN ĐIỆN THOẠI / MÀN HÌNH NHỎ
+           (Không thay đổi giao diện/tính năng trên máy tính - chỉ áp
+           dụng khi màn hình nhỏ hơn các mốc breakpoint dưới đây)
+           ============================================================ */
+        @media (max-width: 1024px) {
+            .wrapper { flex-direction: column; padding: 16px; gap: 16px; }
+            aside { width: 100%; }
+            .sidebar-card { position: static; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 10px 14px; flex-wrap: wrap; gap: 10px; }
+            .header-left { gap: 8px; }
+            .logo-img { width: 36px; height: 36px; }
+            .logo-title { font-size: 17px; }
+            .search-container { width: 100%; order: 3; }
+            .header-right { gap: 8px; }
+            .header-right button { padding: 8px 10px; font-size: 13px; }
+
+            .wrapper { padding: 12px; gap: 12px; }
+            .card { padding: 16px; }
+            .main-heading-box { flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+            .main-title { font-size: 19px; }
+
+            .question-title { font-size: 16px; }
+            .leaderboard-table th, .leaderboard-table td { padding: 10px 8px; font-size: 13px; }
+
+            .auth-box { width: 92vw; padding: 22px; }
+
+            #casioToggleBtn { width: 58px !important; height: 58px !important; right: 12px !important; bottom: 12px !important; font-size: 11px !important; }
+            #geoToggleBtn { right: 80px !important; bottom: 22px !important; padding: 8px 10px !important; font-size: 12px !important; }
+            #casioContainer, #geoContainer {
+                left: 2vw !important; right: 2vw !important; top: 8vh !important;
+                width: 96vw !important; height: 80vh !important;
+                max-width: 96vw !important; max-height: 80vh !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-title { font-size: 15px; }
+            header { padding: 8px 10px; }
+            .header-right button { padding: 7px 8px; font-size: 12px; }
+            .wrapper { padding: 8px; }
+            .card { padding: 12px; }
+            button { padding: 9px 14px; font-size: 13px; }
+            .meta-line { font-size: 12px; gap: 8px; }
+            .leaderboard-table { font-size: 12px; }
+            .leaderboard-table th, .leaderboard-table td { padding: 8px 6px; }
+
+            #casioToggleBtn { width: 50px !important; height: 50px !important; font-size: 10px !important; }
+            #geoToggleBtn { right: 70px !important; padding: 7px 9px !important; font-size: 11px !important; }
+        }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -1455,6 +1509,71 @@ document.addEventListener("mouseup", () => {
     resizing = false;
 });
 
+/* =====================
+   HỖ TRỢ CẢM ỨNG (TOUCH) CHO ĐIỆN THOẠI / MÁY TÍNH BẢNG
+   (Bổ sung thêm, không thay đổi hành vi chuột trên máy tính)
+===================== */
+casioHeader.addEventListener("touchstart", (e) => {
+    dragging = true;
+    const t = e.touches[0];
+    offsetX = t.clientX - casioContainer.offsetLeft;
+    offsetY = t.clientY - casioContainer.offsetTop;
+}, { passive: true });
+
+document.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+    const t = e.touches[0];
+
+    let left = t.clientX - offsetX;
+    let top = t.clientY - offsetY;
+
+    const maxLeft = window.innerWidth - casioContainer.offsetWidth;
+    left = Math.max(0, Math.min(left, maxLeft));
+
+    const maxTop = window.innerHeight - casioContainer.offsetHeight;
+    top = Math.max(0, Math.min(top, maxTop));
+
+    casioContainer.style.left = left + "px";
+    casioContainer.style.top = top + "px";
+    casioContainer.style.right = "auto";
+}, { passive: true });
+
+document.addEventListener("touchend", () => {
+    dragging = false;
+});
+
+resizeHandle.addEventListener("touchstart", () => {
+    resizing = true;
+}, { passive: true });
+
+document.addEventListener("touchmove", (e) => {
+    if (!resizing) return;
+    const t = e.touches[0];
+
+    const rect = casioContainer.getBoundingClientRect();
+
+    let newWidth = t.clientX - rect.left;
+    let newHeight = newWidth / aspectRatio;
+
+    if (rect.left + newWidth > window.innerWidth) {
+        newWidth = window.innerWidth - rect.left;
+        newHeight = newWidth / aspectRatio;
+    }
+
+    if (rect.top + newHeight > window.innerHeight) {
+        newHeight = window.innerHeight - rect.top;
+        newWidth = newHeight * aspectRatio;
+    }
+
+    if (newWidth > 200) {
+        casioContainer.style.width = newWidth + "px";
+        casioContainer.style.height = newHeight + "px";
+    }
+}, { passive: true });
+
+document.addEventListener("touchend", () => {
+    resizing = false;
+});
 
 </script>
 
@@ -1678,6 +1797,70 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener("mouseup", () => {
+    geoResizing = false;
+});
+
+/* =====================
+   HỖ TRỢ CẢM ỨNG (TOUCH) CHO ĐIỆN THOẠI / MÁY TÍNH BẢNG
+   (Bổ sung thêm, không thay đổi hành vi chuột trên máy tính)
+===================== */
+geoHeader.addEventListener("touchstart", (e) => {
+    geoDragging = true;
+    const t = e.touches[0];
+    geoOffsetX = t.clientX - geoContainer.offsetLeft;
+    geoOffsetY = t.clientY - geoContainer.offsetTop;
+}, { passive: true });
+
+document.addEventListener("touchmove", (e) => {
+    if (!geoDragging) return;
+    const t = e.touches[0];
+
+    let left = t.clientX - geoOffsetX;
+    let top = t.clientY - geoOffsetY;
+
+    const maxLeft = window.innerWidth - geoContainer.offsetWidth;
+    left = Math.max(0, Math.min(left, maxLeft));
+
+    const maxTop = window.innerHeight - geoContainer.offsetHeight;
+    top = Math.max(0, Math.min(top, maxTop));
+
+    geoContainer.style.left = left + "px";
+    geoContainer.style.top = top + "px";
+    geoContainer.style.right = "auto";
+}, { passive: true });
+
+document.addEventListener("touchend", () => {
+    geoDragging = false;
+});
+
+geoResizeHandle.addEventListener("touchstart", () => {
+    geoResizing = true;
+}, { passive: true });
+
+document.addEventListener("touchmove", (e) => {
+    if (!geoResizing) return;
+    const t = e.touches[0];
+
+    const rect = geoContainer.getBoundingClientRect();
+
+    let newWidth = t.clientX - rect.left;
+    let newHeight = t.clientY - rect.top;
+
+    if (rect.left + newWidth > window.innerWidth) {
+        newWidth = window.innerWidth - rect.left;
+    }
+
+    if (rect.top + newHeight > window.innerHeight) {
+        newHeight = window.innerHeight - rect.top;
+    }
+
+    if (newWidth > 300 && newHeight > 300) {
+        geoContainer.style.width = newWidth + "px";
+        geoContainer.style.height = newHeight + "px";
+    }
+}, { passive: true });
+
+document.addEventListener("touchend", () => {
     geoResizing = false;
 });
 
